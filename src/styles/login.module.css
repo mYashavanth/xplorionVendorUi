@@ -1,0 +1,27 @@
+/* 2xl */
+.main {
+  background-color: #f5f6f7;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.main form {
+  width: 100%;
+}
+/* Responsive */
+/* xl */
+@media all and (min-width: 1280px) and (max-width: 1535px) {
+}
+/* lg */
+@media all and (min-width: 992px) and (max-width: 1279px) {
+}
+/* md */
+@media all and (min-width: 768px) and (max-width: 991px) {
+}
+/* sm */
+@media all and (min-width: 480px) and (max-width: 767px) {
+}
+/* base */
+@media all and (min-width: 0px) and (max-width: 479px) {
+}
