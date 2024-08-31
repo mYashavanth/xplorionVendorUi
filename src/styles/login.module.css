@@ -1,10 +1,16 @@
 /* 2xl */
 .main {
   background-color: #f5f6f7;
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
+
+}
+@media (min-height: 100vh) {
+  .main {
+    padding: 80px 0; 
+  }
 }
 .main form {
   width: 100%;

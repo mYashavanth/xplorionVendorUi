@@ -1,9 +1,161 @@
 import Head from "next/head";
-import Image from "next/image";
-import styles from "@/styles/home.module.css";
-import { Heading } from "@chakra-ui/react";
+import { Button, Heading } from "@chakra-ui/react";
+import React, { useState, useMemo, useCallback, useRef } from "react";
+import { AgGridReact } from "ag-grid-react";
+import "ag-grid-community/styles/ag-grid.css";
+import "ag-grid-community/styles/ag-theme-alpine.css";
 
 export default function Home() {
+  const gridApiRef = useRef(null);
+
+  // Function to generate random data with date range having a minimum gap of 2 days
+  const generateRandomData = useCallback(() => {
+    const travelCompanionsOptions = ["Family (with children)", "Friends"];
+    const tripBudgetTierOptions = ["Luxury", "Economic"];
+
+    return Array(100)
+      .fill()
+      .map((_, index) => {
+        const startDate = getRandomDate();
+        const endDate = getRandomDate(startDate);
+        return {
+          itineraryId: `#KER240${index + 1}`,
+          userNameEmail: "Rohan Canara, rohancanara@gmail.com",
+          destination: "Kochi, Kerala",
+          countryOfDest: "India",
+          travelDateRange: {
+            start: startDate,
+            end: endDate,
+          },
+          travelCompanions:
+            travelCompanionsOptions[
+              Math.floor(Math.random() * travelCompanionsOptions.length)
+            ],
+          tripBudgetTier:
+            tripBudgetTierOptions[
+              Math.floor(Math.random() * tripBudgetTierOptions.length)
+            ],
+          action: "View Details",
+        };
+      });
+  }, []);
+
+  // Function to get a random date within the year 2024
+  const getRandomDate = (minDate) => {
+    const start = new Date(2024, 0, 1); // Start of the year
+    const end = new Date(2024, 11, 31); // End of the year
+    const min = minDate ? new Date(minDate) : start;
+    const max = new Date(min.getTime() + 365 * 24 * 60 * 60 * 1000); // +1 year from minDate
+
+    const randomDate = new Date(
+      min.getTime() + Math.random() * (max.getTime() - min.getTime())
+    );
+
+    if (minDate) {
+      return randomDate.toISOString().split("T")[0]; // Return YYYY-MM-DD format
+    }
+
+    return randomDate.toISOString().split("T")[0]; // Return YYYY-MM-DD format
+  };
+
+  const [rowData] = useState(generateRandomData);
+
+  // Column definitions with floating filters and date filtering
+  const columnDefs = useMemo(
+    () => [
+      {
+        headerName: "ITINERARY ID",
+        field: "itineraryId",
+      },
+      {
+        headerName: "USER NAME & EMAIL ID",
+        field: "userNameEmail",
+      },
+      {
+        headerName: "DESTINATION",
+        field: "destination",
+      },
+      {
+        headerName: "COUNTRY OF DEST.",
+        field: "countryOfDest",
+      },
+      {
+        headerName: "TRAVEL DATE RANGE",
+        field: "travelDateRange",
+        valueFormatter: (params) =>
+          `${params.value.start} to ${params.value.end}`,
+        filter: "agDateColumnFilter",
+        filterParams: {
+          comparator: (filterLocalDateAtMidnight, cellValue) => {
+            const [start, end] = cellValue.split(" to ");
+            const cellStartDate = new Date(start);
+            const cellEndDate = new Date(end);
+            console.log({
+              filterLocalDateAtMidnight,
+              cellEndDate,
+              cellStartDate,
+            });
+
+            // Compare dates to determine if the filter criteria match
+            if (cellEndDate < filterLocalDateAtMidnight) {
+              return -1;
+            } else if (cellStartDate > filterLocalDateAtMidnight) {
+              return 1;
+            } else {
+              return 0;
+            }
+          },
+        },
+      },
+      {
+        headerName: "TRAVEL COMPANIONS",
+        field: "travelCompanions",
+      },
+      {
+        headerName: "TRIP BUDGET TIER",
+        field: "tripBudgetTier",
+      },
+      {
+        headerName: "Action",
+        field: "action",
+        filter: false, // No filter for action column
+        cellRenderer: (params) => (
+          <Button onClick={() => handleAction(params)}>View Details</Button>
+        ),
+      },
+    ],
+    []
+  );
+
+  const handleAction = useCallback((params) => {
+    console.log("Redirect to details page for:", params.data.itineraryId);
+    // Add routing logic here
+  }, []);
+
+  const gridOptions = useMemo(
+    () => ({
+      rowData,
+      columnDefs,
+      defaultColDef: {
+        filter: true,
+        floatingFilter: true,
+        flex: 1,
+        sortable: true,
+        resizable: true,
+        filterParams: {
+          debounceMs: 0,
+          buttons: ["reset"],
+        },
+      },
+      rowSelection: "multiple",
+      suppressRowClickSelection: true,
+      pagination: true,
+      paginationPageSize: 10,
+      paginationPageSizeSelector: [10, 25, 50],
+    }),
+    [rowData, columnDefs]
+  );
+
   return (
     <>
       <Head>
@@ -13,6 +165,24 @@ export default function Home() {
       </Head>
       <main>
         <Heading>Home</Heading>
+
+        <div>
+          <h1>My AG Grid Table</h1>
+          <div
+            id="myGrid"
+            className="ag-theme-alpine"
+            style={{ height: 500, width: "100%" }}
+          >
+            <AgGridReact
+              gridOptions={gridOptions}
+              onGridReady={(params) => {
+                gridApiRef.current = params.api;
+                params.api.sizeColumnsToFit();
+              }}
+              domLayout="autoHeight"
+            />
+          </div>
+        </div>
       </main>
     </>
   );
