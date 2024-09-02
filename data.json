@@ -1,0 +1,122 @@
+[
+  {
+    "id": 1,
+    "interest_category": "Taste Buds",
+    "category_based_interests": [
+      "Street Food",
+      "Cafes",
+      "Food Adventures",
+      "Fine Dining",
+      "Healthy Eating",
+      "Brunch"
+    ]
+  },
+  {
+    "id": 2,
+    "interest_category": "Adventure",
+    "category_based_interests": [
+      "Hiking",
+      "Skydiving",
+      "Scuba Diving",
+      "Rock Climbing",
+      "Bungee Jumping",
+      "Paragliding"
+    ]
+  },
+  {
+    "id": 3,
+    "interest_category": "Relaxation",
+    "category_based_interests": [
+      "Spas",
+      "Beach Resorts",
+      "Yoga Retreats",
+      "Meditation",
+      "Hot Springs",
+      "Wellness Centers"
+    ]
+  },
+  {
+    "id": 4,
+    "interest_category": "Art and Culture",
+    "category_based_interests": [
+      "Museums",
+      "Art Galleries",
+      "Theaters",
+      "Historical Sites",
+      "Music Festivals",
+      "Street Art"
+    ]
+  },
+  {
+    "id": 5,
+    "interest_category": "Nature Lovers",
+    "category_based_interests": [
+      "National Parks",
+      "Wildlife Safaris",
+      "Bird Watching",
+      "Botanical Gardens",
+      "Nature Walks",
+      "Camping"
+    ]
+  },
+  {
+    "id": 6,
+    "interest_category": "Fitness",
+    "category_based_interests": [
+      "Gym Workouts",
+      "CrossFit",
+      "Running",
+      "Cycling",
+      "Swimming",
+      "Pilates"
+    ]
+  },
+  {
+    "id": 7,
+    "interest_category": "Technology",
+    "category_based_interests": [
+      "Coding",
+      "Robotics",
+      "Artificial Intelligence",
+      "Virtual Reality",
+      "Gaming",
+      "Tech Meetups"
+    ]
+  },
+  {
+    "id": 8,
+    "interest_category": "Photography",
+    "category_based_interests": [
+      "Portrait Photography",
+      "Landscape Photography",
+      "Wildlife Photography",
+      "Street Photography",
+      "Drone Photography",
+      "Photo Editing"
+    ]
+  },
+  {
+    "id": 9,
+    "interest_category": "Books and Literature",
+    "category_based_interests": [
+      "Fiction",
+      "Non-fiction",
+      "Poetry",
+      "Book Clubs",
+      "Author Meetups",
+      "Writing Workshops"
+    ]
+  },
+  {
+    "id": 10,
+    "interest_category": "Music",
+    "category_based_interests": [
+      "Live Concerts",
+      "Instrument Playing",
+      "Music Production",
+      "Choir Singing",
+      "DJing",
+      "Songwriting"
+    ]
+  }
+]

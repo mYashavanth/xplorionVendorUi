@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+  border,
   Box,
   Button,
   Center,
@@ -51,15 +52,12 @@ export default function Login() {
           >
             <Center>
               <Image
-                src="/login/logo.svg"
+                src="/login/logo.png"
                 alt="logo"
-                width={100}
-                height={148}
+                width={400}
+                height={100}
               />
             </Center>
-            <Heading fontSize={"40px"} fontWeight={700}>
-              XPLORIONAI
-            </Heading>
           </Flex>
           <Flex>
             <Box
@@ -73,12 +71,12 @@ export default function Login() {
               <Image
                 src="/login/Photo.png"
                 alt="photo"
-                layout="responsive"
                 width={504}
                 height={440}
                 style={{
                   borderRadius: "8px 0px 0px 8px",
                 }}
+                layout="responsive"
               />
             </Box>
             <VStack
