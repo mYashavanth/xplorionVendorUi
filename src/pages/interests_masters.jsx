@@ -32,8 +32,8 @@ import { RxDashboard } from "react-icons/rx";
 import { BsFillPlusCircleFill } from "react-icons/bs";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
 
-export default function InterestsMasters() {
-  const [rowData, setRowData] = useState([]);
+export default function InterestsMasters({ initialData }) {
+  const [rowData, setRowData] = useState(initialData || []);
   const [formData, setFormData] = useState({
     id: "",
     interest_category: "",
@@ -43,19 +43,18 @@ export default function InterestsMasters() {
   const [isEditing, setIsEditing] = useState(false);
   const [newInterest, setNewInterest] = useState(""); // For tracking new interest input
   const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
-  console.log("baseURL", baseURL);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-  const fetchData = async () => {
-    try {
-      const response = await axios.get(`${baseURL}/data`);
-      setRowData(response.data);
-    } catch (error) {
-      console.error("There was an error fetching the data!", error);
-    }
-  };
+  // useEffect(() => {
+  //   fetchData();
+  // }, []);
+  // const fetchData = async () => {
+  //   try {
+  //     const response = await axios.get(`${baseURL}/data`);
+  //     setRowData(response.data);
+  //   } catch (error) {
+  //     console.error("There was an error fetching the data!", error);
+  //   }
+  // };
 
   const handleSubmit = async () => {
     try {
@@ -354,4 +353,24 @@ export default function InterestsMasters() {
       </main>
     </>
   );
+}
+
+export async function getServerSideProps() {
+  const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
+  try {
+    const response = await axios.get(`${baseURL}/data`);
+
+    return {
+      props: {
+        initialData: response.data,
+      },
+    };
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    return {
+      props: {
+        initialData: [],
+      },
+    };
+  }
 }
