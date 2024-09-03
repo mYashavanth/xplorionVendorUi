@@ -8,68 +8,91 @@ import {
   Button,
   HStack,
   Text,
+  useDisclosure,
   Modal,
   ModalOverlay,
   ModalContent,
   ModalHeader,
-  ModalFooter,
-  ModalBody,
   ModalCloseButton,
+  ModalBody,
+  ModalFooter,
   Input,
-  useDisclosure,
+  VStack,
 } from "@chakra-ui/react";
 import Head from "next/head";
 import styles from "../styles/interests_masters.module.css";
 
 export default function InterestsMasters() {
   const [rowData, setRowData] = useState([]);
-  const [currentData, setCurrentData] = useState(null);
-  const { isOpen, onOpen, onClose } = useDisclosure();
   const [formData, setFormData] = useState({
+    id: "",
     interest_category: "",
-    category_based_interests: "",
+    category_based_interests: [],
   });
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
+    // Fetch data from API
     axios
       .get("http://localhost:3000/api/data")
-      .then((response) => setRowData(response.data))
-      .catch((error) =>
-        console.error("There was an error fetching the data!", error)
-      );
+      .then((response) => {
+        setRowData(response.data);
+      })
+      .catch((error) => {
+        console.error("There was an error fetching the data!", error);
+      });
   }, []);
 
+  const handleSubmit = () => {
+    if (isEditing) {
+      // Edit existing data
+      axios
+        .put("http://localhost:3000/api/data", formData)
+        .then((response) => {
+          setRowData((prevData) =>
+            prevData.map((item) =>
+              item.id === response.data.id ? response.data : item
+            )
+          );
+          onClose();
+        })
+        .catch((error) => {
+          console.error("There was an error updating the item!", error);
+        });
+    } else {
+      // Add new data
+      const newId = rowData.length
+        ? Math.max(...rowData.map((item) => item.id)) + 1
+        : 1;
+      const newData = { ...formData, id: newId };
+
+      axios
+        .post("http://localhost:3000/api/data", newData)
+        .then((response) => {
+          setRowData((prevData) => [...prevData, response.data]);
+          onClose();
+        })
+        .catch((error) => {
+          console.error("There was an error adding the item!", error);
+        });
+    }
+  };
+
   const handleEdit = (data) => {
-    setCurrentData(data);
-    setFormData({
-      interest_category: data.interest_category,
-      category_based_interests: data.category_based_interests.join(", "),
-    });
+    setFormData(data);
+    setIsEditing(true);
     onOpen();
   };
 
-  const handleSubmit = () => {
-    const updatedData = {
-      ...currentData,
-      interest_category: formData.interest_category,
-      category_based_interests: formData.category_based_interests
-        .split(", ")
-        .map((item) => item.trim()),
-    };
-
-    axios
-      .put(`http://localhost:3000/api/data`, updatedData)
-      .then((response) => {
-        setRowData((prevData) =>
-          prevData.map((item) =>
-            item.id === response.data.id ? response.data : item
-          )
-        );
-        onClose();
-      })
-      .catch((error) =>
-        console.error("There was an error updating the item!", error)
-      );
+  const handleAdd = () => {
+    setFormData({
+      id: "",
+      interest_category: "",
+      category_based_interests: [],
+    });
+    setIsEditing(false);
+    onOpen();
   };
 
   const handleDelete = (id) => {
@@ -78,9 +101,9 @@ export default function InterestsMasters() {
       .then((response) => {
         setRowData((prevData) => prevData.filter((item) => item.id !== id));
       })
-      .catch((error) =>
-        console.error("There was an error deleting the item!", error)
-      );
+      .catch((error) => {
+        console.error("There was an error deleting the item!", error);
+      });
   };
 
   const columnDefs = useMemo(
@@ -139,6 +162,11 @@ export default function InterestsMasters() {
         <title>Interests Masters</title>
       </Head>
       <main className={styles.main}>
+        <Box mb={4}>
+          <Button colorScheme="green" onClick={handleAdd}>
+            Add New
+          </Button>
+        </Box>
         <Box className="ag-theme-alpine" w={"100%"} h={"auto"}>
           <AgGridReact
             rowData={rowData}
@@ -151,6 +179,10 @@ export default function InterestsMasters() {
               floatingFilter: true,
               sortable: true,
               resizable: true,
+              filterParams: {
+                debounceMs: 0,
+                buttons: ["reset"],
+              },
             }}
             domLayout="autoHeight"
             getRowHeight={(params) =>
@@ -159,39 +191,44 @@ export default function InterestsMasters() {
           />
         </Box>
 
-        {/* Chakra Modal for Editing */}
+        {/* Modal for Add/Edit */}
         <Modal isOpen={isOpen} onClose={onClose}>
           <ModalOverlay />
           <ModalContent>
-            <ModalHeader>Edit Interest</ModalHeader>
+            <ModalHeader>
+              {isEditing ? "Edit Interest" : "Add New Interest"}
+            </ModalHeader>
             <ModalCloseButton />
             <ModalBody>
-              <Input
-                placeholder="Interest Category"
-                value={formData.interest_category}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    interest_category: e.target.value,
-                  })
-                }
-                mb={4}
-              />
-              <Input
-                placeholder="Category Based Interests (comma separated)"
-                value={formData.category_based_interests}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    category_based_interests: e.target.value,
-                  })
-                }
-              />
+              <VStack spacing={4}>
+                <Input
+                  placeholder="Interest Category"
+                  value={formData.interest_category}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      interest_category: e.target.value,
+                    })
+                  }
+                />
+                <Input
+                  placeholder="Category Based Interests (comma separated)"
+                  value={formData.category_based_interests.join(", ")}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      category_based_interests: e.target.value
+                        .split(",")
+                        .map((item) => item.trim()),
+                    })
+                  }
+                />
+              </VStack>
             </ModalBody>
 
             <ModalFooter>
               <Button colorScheme="blue" mr={3} onClick={handleSubmit}>
-                Submit
+                {isEditing ? "Update" : "Submit"}
               </Button>
               <Button variant="ghost" onClick={onClose}>
                 Cancel
