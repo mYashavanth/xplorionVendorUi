@@ -1,64 +1,88 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import axios from "axios";
-import { Box, Button, HStack, Text } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  HStack,
+  Text,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  Input,
+  useDisclosure,
+} from "@chakra-ui/react";
 import Head from "next/head";
 import styles from "../styles/interests_masters.module.css";
 
 export default function InterestsMasters() {
   const [rowData, setRowData] = useState([]);
+  const [currentData, setCurrentData] = useState(null);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [formData, setFormData] = useState({
+    interest_category: "",
+    category_based_interests: "",
+  });
 
   useEffect(() => {
-    // Fetch data from API
     axios
       .get("http://localhost:3000/api/data")
-      .then((response) => {
-        setRowData(response.data);
-      })
-      .catch((error) => {
-        console.error("There was an error fetching the data!", error);
-      });
+      .then((response) => setRowData(response.data))
+      .catch((error) =>
+        console.error("There was an error fetching the data!", error)
+      );
   }, []);
 
   const handleEdit = (data) => {
-    // Add your edit logic here
-    const updatedItem = {
-      ...data,
-      interest_category: "Updated Category", // Example update
+    setCurrentData(data);
+    setFormData({
+      interest_category: data.interest_category,
+      category_based_interests: data.category_based_interests.join(", "),
+    });
+    onOpen();
+  };
+
+  const handleSubmit = () => {
+    const updatedData = {
+      ...currentData,
+      interest_category: formData.interest_category,
+      category_based_interests: formData.category_based_interests
+        .split(", ")
+        .map((item) => item.trim()),
     };
 
     axios
-      .put("http://localhost:3000/api/data", updatedItem)
+      .put(`http://localhost:3000/api/data`, updatedData)
       .then((response) => {
-        console.log("Item updated:", response.data);
-        // Optionally, update state or refetch data
         setRowData((prevData) =>
           prevData.map((item) =>
             item.id === response.data.id ? response.data : item
           )
         );
+        onClose();
       })
-      .catch((error) => {
-        console.error("There was an error updating the item!", error);
-      });
+      .catch((error) =>
+        console.error("There was an error updating the item!", error)
+      );
   };
 
   const handleDelete = (id) => {
     axios
       .delete("http://localhost:3000/api/data", { data: { id } })
       .then((response) => {
-        console.log("Item deleted:", response.data);
-        // Optionally, update state or refetch data
         setRowData((prevData) => prevData.filter((item) => item.id !== id));
       })
-      .catch((error) => {
-        console.error("There was an error deleting the item!", error);
-      });
+      .catch((error) =>
+        console.error("There was an error deleting the item!", error)
+      );
   };
 
-  // Column definitions with floating filters and date filtering
   const columnDefs = useMemo(
     () => [
       { headerName: "ID", field: "id", flex: 1 },
@@ -66,13 +90,6 @@ export default function InterestsMasters() {
       {
         headerName: "Category Based Interests",
         field: "category_based_interests",
-        // valueFormatter: (params) =>{
-        //     // display the data in column as comma separated string
-        //     return params.value.join(",");
-        // } ,
-
-        // I want to display the data in separate colums
-
         cellRenderer: (params) => (
           <Box
             style={{
@@ -128,26 +145,60 @@ export default function InterestsMasters() {
             columnDefs={columnDefs}
             pagination={true}
             paginationPageSize={5}
-            paginationPageSizeSelector={[5, 10, 20]}
             enableCellTextSelection={true}
             defaultColDef={{
               filter: true,
               floatingFilter: true,
               sortable: true,
               resizable: true,
-              filterParams: {
-                debounceMs: 0,
-                buttons: ["reset"],
-              },
             }}
             domLayout="autoHeight"
-            getRowHeight={(params) => {
-                console.log({params});
-                
-              return params.data.category_based_interests.length * 45;
-            }}
+            getRowHeight={(params) =>
+              params.data.category_based_interests.length * 45
+            }
           />
         </Box>
+
+        {/* Chakra Modal for Editing */}
+        <Modal isOpen={isOpen} onClose={onClose}>
+          <ModalOverlay />
+          <ModalContent>
+            <ModalHeader>Edit Interest</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>
+              <Input
+                placeholder="Interest Category"
+                value={formData.interest_category}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    interest_category: e.target.value,
+                  })
+                }
+                mb={4}
+              />
+              <Input
+                placeholder="Category Based Interests (comma separated)"
+                value={formData.category_based_interests}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    category_based_interests: e.target.value,
+                  })
+                }
+              />
+            </ModalBody>
+
+            <ModalFooter>
+              <Button colorScheme="blue" mr={3} onClick={handleSubmit}>
+                Submit
+              </Button>
+              <Button variant="ghost" onClick={onClose}>
+                Cancel
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
       </main>
     </>
   );
