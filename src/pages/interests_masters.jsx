@@ -46,49 +46,43 @@ export default function InterestsMasters() {
   console.log("baseURL", baseURL);
 
   useEffect(() => {
-    // Fetch data from API
-    axios
-      .get(`${baseURL}/data`)
-      .then((response) => {
-        setRowData(response.data);
-      })
-      .catch((error) => {
-        console.error("There was an error fetching the data!", error);
-      });
+    fetchData();
   }, []);
+  const fetchData = async () => {
+    try {
+      const response = await axios.get(`${baseURL}/data`);
+      setRowData(response.data);
+    } catch (error) {
+      console.error("There was an error fetching the data!", error);
+    }
+  };
 
-  const handleSubmit = () => {
-    if (isEditing) {
-      // Edit existing data
-      axios
-        .put(`${baseURL}/data`, formData)
-        .then((response) => {
-          setRowData((prevData) =>
-            prevData.map((item) =>
-              item.id === response.data.id ? response.data : item
-            )
-          );
-          onClose();
-        })
-        .catch((error) => {
-          console.error("There was an error updating the item!", error);
-        });
-    } else {
-      // Add new data
-      const newId = rowData.length
-        ? Math.max(...rowData.map((item) => item.id)) + 1
-        : 1;
-      const newData = { ...formData, id: newId };
+  const handleSubmit = async () => {
+    try {
+      if (isEditing) {
+        // Edit existing data
+        const response = await axios.put(`${baseURL}/data`, formData);
+        setRowData((prevData) =>
+          prevData.map((item) =>
+            item.id === response.data.id ? response.data : item
+          )
+        );
+      } else {
+        // Add new data
+        const newId = rowData.length
+          ? Math.max(...rowData.map((item) => item.id)) + 1
+          : 1;
+        const newData = { ...formData, id: newId };
 
-      axios
-        .post(`${baseURL}/data`, newData)
-        .then((response) => {
-          setRowData((prevData) => [...prevData, response.data]);
-          onClose();
-        })
-        .catch((error) => {
-          console.error("There was an error adding the item!", error);
-        });
+        const response = await axios.post(`${baseURL}/data`, newData);
+        setRowData((prevData) => [...prevData, response.data]);
+      }
+      onClose();
+    } catch (error) {
+      console.error(
+        `There was an error ${isEditing ? "updating" : "adding"} the item!`,
+        error
+      );
     }
   };
 
@@ -108,15 +102,13 @@ export default function InterestsMasters() {
     onOpen();
   };
 
-  const handleDelete = (id) => {
-    axios
-      .delete(`${baseURL}/data`, { data: { id } })
-      .then((response) => {
-        setRowData((prevData) => prevData.filter((item) => item.id !== id));
-      })
-      .catch((error) => {
-        console.error("There was an error deleting the item!", error);
-      });
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`${baseURL}/data`, { data: { id } });
+      setRowData((prevData) => prevData.filter((item) => item.id !== id));
+    } catch (error) {
+      console.error("There was an error deleting the item!", error);
+    }
   };
 
   // Add new interest to the category_based_interests array
@@ -258,9 +250,13 @@ export default function InterestsMasters() {
               },
             }}
             domLayout="autoHeight"
-            getRowHeight={(params) =>
-              params.data.category_based_interests.length * 45
-            }
+            getRowHeight={(params) => {
+              if (params.data.category_based_interests.length > 1) {
+                return params.data.category_based_interests.length * 45;
+              } else {
+                return 80;
+              }
+            }}
           />
         </Box>
 
