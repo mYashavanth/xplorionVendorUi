@@ -1,8 +1,15 @@
 body {
+  font-family: "Public Sans", sans-serif !important;
   background-color: #f5f6f7 !important;
 }
-nav{
+.gridContainer,
+.ag-theme-alpine,
+.ag-theme-alpine .ag-header-cell-label,
+.ag-theme-alpine .ag-cell {
+  font-family: "Public Sans", sans-serif !important;
+}
+nav {
   position: sticky;
   top: 0;
-  z-index: 9999;
+  z-index: 999;
 }

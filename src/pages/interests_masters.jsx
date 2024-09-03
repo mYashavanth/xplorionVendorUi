@@ -7,6 +7,7 @@ import {
   Box,
   Button,
   HStack,
+  VStack,
   Text,
   useDisclosure,
   Modal,
@@ -17,10 +18,19 @@ import {
   ModalBody,
   ModalFooter,
   Input,
-  VStack,
+  FormControl,
+  FormLabel,
+  Tag,
+  TagLabel,
+  TagCloseButton,
+  Heading,
+  Spacer,
 } from "@chakra-ui/react";
 import Head from "next/head";
 import styles from "../styles/interests_masters.module.css";
+import { RxDashboard } from "react-icons/rx";
+import { BsFillPlusCircleFill } from "react-icons/bs";
+import { FiEdit, FiTrash2 } from "react-icons/fi";
 
 export default function InterestsMasters() {
   const [rowData, setRowData] = useState([]);
@@ -31,11 +41,14 @@ export default function InterestsMasters() {
   });
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [isEditing, setIsEditing] = useState(false);
+  const [newInterest, setNewInterest] = useState(""); // For tracking new interest input
+  const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
+  console.log("baseURL", baseURL);
 
   useEffect(() => {
     // Fetch data from API
     axios
-      .get("http://localhost:3000/api/data")
+      .get(`${baseURL}/data`)
       .then((response) => {
         setRowData(response.data);
       })
@@ -48,7 +61,7 @@ export default function InterestsMasters() {
     if (isEditing) {
       // Edit existing data
       axios
-        .put("http://localhost:3000/api/data", formData)
+        .put(`${baseURL}/data`, formData)
         .then((response) => {
           setRowData((prevData) =>
             prevData.map((item) =>
@@ -68,7 +81,7 @@ export default function InterestsMasters() {
       const newData = { ...formData, id: newId };
 
       axios
-        .post("http://localhost:3000/api/data", newData)
+        .post(`${baseURL}/data`, newData)
         .then((response) => {
           setRowData((prevData) => [...prevData, response.data]);
           onClose();
@@ -97,13 +110,37 @@ export default function InterestsMasters() {
 
   const handleDelete = (id) => {
     axios
-      .delete("http://localhost:3000/api/data", { data: { id } })
+      .delete(`${baseURL}/data`, { data: { id } })
       .then((response) => {
         setRowData((prevData) => prevData.filter((item) => item.id !== id));
       })
       .catch((error) => {
         console.error("There was an error deleting the item!", error);
       });
+  };
+
+  // Add new interest to the category_based_interests array
+  const handleAddInterest = () => {
+    if (newInterest) {
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        category_based_interests: [
+          ...prevFormData.category_based_interests,
+          newInterest,
+        ],
+      }));
+      setNewInterest(""); // Clear the input
+    }
+  };
+
+  // Remove interest from the category_based_interests array
+  const handleRemoveInterest = (interest) => {
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      category_based_interests: prevFormData.category_based_interests.filter(
+        (item) => item !== interest
+      ),
+    }));
   };
 
   const columnDefs = useMemo(
@@ -134,20 +171,30 @@ export default function InterestsMasters() {
         filter: false,
         flex: 2,
         cellRenderer: (params) => (
-          <HStack spacing={2}>
+          <HStack spacing={2} mt={3}>
             <Button
-              colorScheme="blue"
+              borderRadius={"full"}
               size="sm"
               onClick={() => handleEdit(params.data)}
+              w={"48px"}
+              h={"48px"}
+              bgColor={"transparent"}
+              _hover={{ bgColor: "#f5f6f7" }}
+              border={"1px solid #626C70"}
             >
-              Edit
+              <FiEdit color={"#626C70"} size={"24px"} />
             </Button>
             <Button
-              colorScheme="red"
+              borderRadius={"full"}
               size="sm"
               onClick={() => handleDelete(params.data.id)}
+              w={"48px"}
+              h={"48px"}
+              bgColor={"transparent"}
+              _hover={{ bgColor: "#f5f6f7" }}
+              border={"1px solid #626C70"}
             >
-              Delete
+              <FiTrash2 color={"#626C70"} size={"24px"} />
             </Button>
           </HStack>
         ),
@@ -162,17 +209,43 @@ export default function InterestsMasters() {
         <title>Interests Masters</title>
       </Head>
       <main className={styles.main}>
-        <Box mb={4}>
-          <Button colorScheme="green" onClick={handleAdd}>
-            Add New
-          </Button>
+        <Box>
+          <Text fontWeight={600}>Interests Category</Text>
+          <Text>
+            View/manage interest categories and configure preferences.
+          </Text>
         </Box>
-        <Box className="ag-theme-alpine" w={"100%"} h={"auto"}>
+        <Box w={"100%"} h={"auto"} className="gridContainer">
+          <HStack bgColor={"white"} p={"24px"}>
+            <HStack gap={"12px"} alignItems={"center"}>
+              <RxDashboard color={"#888888"} size={24} />
+              <Heading
+                fontSize={"20px"}
+                fontWeight={600}
+                className="gridContainer"
+              >
+                Interests Category
+              </Heading>
+            </HStack>
+            <Spacer />
+            <Button
+              bgGradient={"linear(to-r, #0099FF, #54AB6A)"}
+              _hover={{ bgGradient: "linear(to-r, #0099FF, #54AB6A)" }}
+              onClick={handleAdd}
+              color={"white"}
+              gap={"8px"}
+            >
+              <BsFillPlusCircleFill size={22} />
+              Add New
+            </Button>
+          </HStack>
           <AgGridReact
+            className="ag-theme-alpine"
             rowData={rowData}
             columnDefs={columnDefs}
             pagination={true}
             paginationPageSize={5}
+            paginationPageSizeSelector={[5, 10, 15]}
             enableCellTextSelection={true}
             defaultColDef={{
               filter: true,
@@ -192,46 +265,92 @@ export default function InterestsMasters() {
         </Box>
 
         {/* Modal for Add/Edit */}
-        <Modal isOpen={isOpen} onClose={onClose}>
-          <ModalOverlay />
-          <ModalContent>
-            <ModalHeader>
-              {isEditing ? "Edit Interest" : "Add New Interest"}
+        <Modal isOpen={isOpen} onClose={onClose} isCentered>
+          <ModalOverlay zIndex={1000} />
+          <ModalContent maxWidth={"512px"}>
+            <ModalHeader borderBottom={"1px solid #E5E7EB"} p={"20px 34px"}>
+              {isEditing ? "Edit Interest" : "Add New Interest"} something
             </ModalHeader>
-            <ModalCloseButton />
-            <ModalBody>
-              <VStack spacing={4}>
-                <Input
-                  placeholder="Interest Category"
-                  value={formData.interest_category}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      interest_category: e.target.value,
-                    })
-                  }
-                />
-                <Input
-                  placeholder="Category Based Interests (comma separated)"
-                  value={formData.category_based_interests.join(", ")}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      category_based_interests: e.target.value
-                        .split(",")
-                        .map((item) => item.trim()),
-                    })
-                  }
-                />
+            <ModalCloseButton
+              borderRadius={"full"}
+              bgColor={"#F5F6F7"}
+              _hover={{ bgColor: "#E5E7EB" }}
+              w={"40px"}
+              h={"40px"}
+              m={"8px 24px 0 0"}
+            />
+            <ModalBody p={"20px 34px 100px"} bgColor={"#f5f6f7"}>
+              <VStack spacing={6}>
+                <FormControl>
+                  <FormLabel>Interest Category</FormLabel>
+                  <Input
+                    placeholder="Interest Category"
+                    value={formData.interest_category}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        interest_category: e.target.value,
+                      })
+                    }
+                  />
+                </FormControl>
+                <FormControl>
+                  <FormLabel>Category Based Interests</FormLabel>
+                  <HStack>
+                    <Input
+                      placeholder="Add a Category Based Interest"
+                      value={newInterest}
+                      onChange={(e) => setNewInterest(e.target.value)}
+                    />
+                    <Button
+                      onClick={handleAddInterest}
+                      colorScheme="blue"
+                      ml={2}
+                    >
+                      Add
+                    </Button>
+                  </HStack>
+                  <VStack mt={4} spacing={0} alignItems={"flex-start"}>
+                    <FormLabel>Associated interests</FormLabel>
+                    <Box display="flex" flexWrap="wrap">
+                      {formData.category_based_interests.map(
+                        (interest, index) => (
+                          <Tag
+                            key={index}
+                            size="md"
+                            borderRadius="4px"
+                            variant="outline"
+                            colorScheme="blue"
+                            m={1}
+                            p={2}
+                            bgColor={"#EDF2FE"}
+                          >
+                            <TagLabel>{interest}</TagLabel>
+                            <TagCloseButton
+                              onClick={() => handleRemoveInterest(interest)}
+                            />
+                          </Tag>
+                        )
+                      )}
+                    </Box>
+                  </VStack>
+                </FormControl>
               </VStack>
             </ModalBody>
 
             <ModalFooter>
-              <Button colorScheme="blue" mr={3} onClick={handleSubmit}>
-                {isEditing ? "Update" : "Submit"}
-              </Button>
-              <Button variant="ghost" onClick={onClose}>
-                Cancel
+              <Button onClick={onClose}>Cancel</Button>
+              <Button
+                bgGradient={"linear(to-r, #0099FF, #54AB6A)"}
+                _hover={{
+                  bgGradient: "linear(to-r, #0099FF, #54AB6A)",
+                  boxShadow: "lg",
+                }}
+                color="white"
+                ml={3}
+                onClick={handleSubmit}
+              >
+                {isEditing ? "Update" : "Create"}
               </Button>
             </ModalFooter>
           </ModalContent>

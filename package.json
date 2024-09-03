@@ -16,6 +16,7 @@
     "ag-grid-community": "^32.1.0",
     "ag-grid-react": "^32.1.0",
     "axios": "^1.7.7",
+    "dotenv": "^16.4.5",
     "framer-motion": "^11.3.31",
     "next": "14.2.7",
     "react": "^18",

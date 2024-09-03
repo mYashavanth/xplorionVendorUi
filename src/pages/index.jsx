@@ -243,7 +243,7 @@ export default function Home() {
             </HStack>
           ))}
         </HStack>
-        <Box className="ag-theme-alpine" h={"auto"} w={"100%"}>
+        <Box h={"auto"} w={"100%"} className="gridContainer">
           <HStack
             p={"24px"}
             gap={"12px"}
@@ -251,11 +251,16 @@ export default function Home() {
             bgColor={"white"}
           >
             <PiNotepad color={"#888888"} size={24} />
-            <Heading fontSize={"20px"} fontWeight={600}>
+            <Heading
+              fontSize={"20px"}
+              fontWeight={600}
+              className="gridContainer"
+            >
               Manage Itineraries
             </Heading>
           </HStack>
           <AgGridReact
+            className="ag-theme-alpine"
             gridOptions={gridOptions}
             onGridReady={(params) => {
               gridApiRef.current = params.api;
