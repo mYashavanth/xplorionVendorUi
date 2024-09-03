@@ -1,4 +1,4 @@
-import data from "../../../data.json";
+let data = require("../../../data.json"); // Import data initially
 
 export default function handler(req, res) {
   switch (req.method) {
@@ -25,14 +25,16 @@ export default function handler(req, res) {
     case "DELETE":
       // Delete an item
       const { id: deleteId } = req.body;
-      const filteredData = data.filter((item) => item.id !== deleteId);
-      if (filteredData.length !== data.length) {
+      const itemIndex = data.findIndex((item) => item.id === deleteId);
+      if (itemIndex !== -1) {
+        data.splice(itemIndex, 1); // Remove the item from the array
         res.status(200).json({ message: "Item deleted" });
       } else {
         res.status(404).json({ message: "Item not found" });
       }
       break;
     default:
+      console.log({ data });
       res.setHeader("Allow", ["GET", "POST", "PUT", "DELETE"]);
       res.status(405).end(`Method ${req.method} Not Allowed`);
       break;

@@ -110,9 +110,18 @@ export default function InterestsMasters() {
 
   const handleDelete = (id) => {
     axios
-      .delete(`${baseURL}/data`, { data: { id } })
+      .delete(`${baseURL}/data`, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        data: { id }, // This is where the id should be sent in the request body
+      })
       .then((response) => {
-        setRowData((prevData) => prevData.filter((item) => item.id !== id));
+        if (response.status === 200) {
+          setRowData((prevData) => prevData.filter((item) => item.id !== id));
+        } else {
+          console.error("Error deleting the item:", response.data.message);
+        }
       })
       .catch((error) => {
         console.error("There was an error deleting the item!", error);
@@ -269,7 +278,7 @@ export default function InterestsMasters() {
           <ModalOverlay zIndex={1000} />
           <ModalContent maxWidth={"512px"}>
             <ModalHeader borderBottom={"1px solid #E5E7EB"} p={"20px 34px"}>
-              {isEditing ? "Edit Interest" : "Add New Interest"} something
+              {isEditing ? "Edit Interest" : "Add New Interest"}
             </ModalHeader>
             <ModalCloseButton
               borderRadius={"full"}
@@ -284,7 +293,7 @@ export default function InterestsMasters() {
                 <FormControl>
                   <FormLabel>Interest Category</FormLabel>
                   <Input
-                    placeholder="Interest Category"
+                    placeholder="Enter interest category"
                     value={formData.interest_category}
                     onChange={(e) =>
                       setFormData({
@@ -296,61 +305,52 @@ export default function InterestsMasters() {
                 </FormControl>
                 <FormControl>
                   <FormLabel>Category Based Interests</FormLabel>
-                  <HStack>
-                    <Input
-                      placeholder="Add a Category Based Interest"
-                      value={newInterest}
-                      onChange={(e) => setNewInterest(e.target.value)}
-                    />
-                    <Button
-                      onClick={handleAddInterest}
-                      colorScheme="blue"
-                      ml={2}
-                    >
-                      Add
-                    </Button>
-                  </HStack>
-                  <VStack mt={4} spacing={0} alignItems={"flex-start"}>
-                    <FormLabel>Associated interests</FormLabel>
-                    <Box display="flex" flexWrap="wrap">
-                      {formData.category_based_interests.map(
-                        (interest, index) => (
+                  <VStack spacing={2}>
+                    {formData.category_based_interests.map(
+                      (interest, index) => (
+                        <HStack key={index} spacing={2}>
                           <Tag
-                            key={index}
-                            size="md"
-                            borderRadius="4px"
-                            variant="outline"
+                            size={"lg"}
+                            variant="subtle"
                             colorScheme="blue"
-                            m={1}
-                            p={2}
-                            bgColor={"#EDF2FE"}
+                            borderRadius={"full"}
                           >
                             <TagLabel>{interest}</TagLabel>
                             <TagCloseButton
                               onClick={() => handleRemoveInterest(interest)}
                             />
                           </Tag>
-                        )
-                      )}
-                    </Box>
+                        </HStack>
+                      )
+                    )}
+                    <HStack spacing={2}>
+                      <Input
+                        placeholder="Add new interest"
+                        value={newInterest}
+                        onChange={(e) => setNewInterest(e.target.value)}
+                      />
+                      <Button onClick={handleAddInterest}>Add</Button>
+                    </HStack>
                   </VStack>
                 </FormControl>
               </VStack>
             </ModalBody>
-
-            <ModalFooter>
-              <Button onClick={onClose}>Cancel</Button>
+            <ModalFooter
+              borderTop={"1px solid #E5E7EB"}
+              p={"20px 34px"}
+              display={"flex"}
+              justifyContent={"space-between"}
+            >
               <Button
-                bgGradient={"linear(to-r, #0099FF, #54AB6A)"}
-                _hover={{
-                  bgGradient: "linear(to-r, #0099FF, #54AB6A)",
-                  boxShadow: "lg",
-                }}
-                color="white"
-                ml={3}
-                onClick={handleSubmit}
+                variant="outline"
+                onClick={onClose}
+                color={"#626C70"}
+                _hover={{ bgColor: "#f5f6f7" }}
               >
-                {isEditing ? "Update" : "Create"}
+                Cancel
+              </Button>
+              <Button colorScheme={"blue"} onClick={handleSubmit}>
+                {isEditing ? "Save Changes" : "Add"}
               </Button>
             </ModalFooter>
           </ModalContent>
