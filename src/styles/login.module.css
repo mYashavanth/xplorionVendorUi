@@ -1,7 +1,7 @@
 /* 2xl */
 .main {
   background-color: #f5f6f7;
-  min-height: 100vh;
+  min-height: calc(100vh - var(--navbar-height));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -9,7 +9,7 @@
 }
 @media (min-height: 100vh) {
   .main {
-    padding: 80px 0; 
+    padding: 20px 0; 
   }
 }
 .main form {

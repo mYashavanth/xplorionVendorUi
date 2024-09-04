@@ -1,3 +1,4 @@
+import { useRef, useEffect } from "react";
 import {
   Center,
   Flex,
@@ -18,6 +19,20 @@ import { IoLogOutOutline } from "react-icons/io5";
 export default function NavBar() {
   const router = useRouter();
   const name = "Admin"; // Change name to test
+  const navBarRef = useRef(null);
+
+  useEffect(() => {
+    if (navBarRef.current) {
+      console.log(navBarRef.current);
+      
+      const navBarHeight = navBarRef.current.offsetHeight;
+      console.log(navBarHeight);
+      document.documentElement.style.setProperty(
+        "--navbar-height",
+        `${navBarHeight}px`
+      );
+    }
+  }, []);
 
   const getInitials = (name) => {
     const nameParts = name.split(/\s+/);
@@ -45,7 +60,7 @@ export default function NavBar() {
   const isActive = (path) => router.pathname === path;
 
   return (
-    <nav>
+    <nav ref={navBarRef}>
       <Flex
         bgGradient={"linear(to-r, #0099FF, #54AB6A)"}
         p={"12px 180px"}
