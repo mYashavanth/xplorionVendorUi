@@ -24,7 +24,7 @@ export default function NavBar() {
   useEffect(() => {
     if (navBarRef.current) {
       console.log(navBarRef.current);
-      
+
       const navBarHeight = navBarRef.current.offsetHeight;
       console.log(navBarHeight);
       document.documentElement.style.setProperty(
@@ -66,14 +66,14 @@ export default function NavBar() {
         p={"12px 180px"}
         color={"white"}
       >
-        <Center gap={"6px"}>
+        <Center gap={"6px"} border={"1px solid white"} maxW={"160px"}>
           <Image
             src="/navBar/logo.png"
             alt="logo"
-            width={160}
+            width={130}
             height={20}
             priority={true}
-            style={{ objectFit: "cover", width: "auto" }}
+            style={{ objectFit: "contain", width: "auto" }}
           />
         </Center>
         <Spacer />
