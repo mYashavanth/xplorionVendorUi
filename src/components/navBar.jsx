@@ -44,7 +44,7 @@ export default function NavBar() {
 
   const navItems = [
     { name: "Dashboard", icon: AiOutlineHome, path: "/" },
-    { name: "Itineraries", icon: PiNotepad, path: "/login" },
+    // { name: "Itineraries", icon: PiNotepad, path: "/login" },
     {
       name: "Interests Masters",
       icon: RxDashboard,
@@ -66,7 +66,7 @@ export default function NavBar() {
         p={"12px 180px"}
         color={"white"}
       >
-        <Center gap={"6px"} border={"1px solid white"} maxW={"160px"}>
+        <Center gap={"6px"} maxW={"160px"}>
           <Image
             src="/navBar/logo.png"
             alt="logo"

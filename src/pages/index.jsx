@@ -14,9 +14,11 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import styles from "../styles/home.module.css";
 import { PiNotepad } from "react-icons/pi";
+import { useRouter } from "next/router";
 
 export default function Home() {
   const gridApiRef = useRef(null);
+  const route = useRouter();
 
   // Function to generate random data with date range having a minimum gap of 2 days
   const generateRandomData = useCallback(() => {
@@ -29,7 +31,7 @@ export default function Home() {
         const startDate = getRandomDate();
         const endDate = getRandomDate(startDate);
         return {
-          itineraryId: `#KER240${index + 1}`,
+          itineraryId: `KER240${index + 1}`,
           userNameEmail: "Rohan Canara, rohancanara@gmail.com",
           destination: "Kochi, Kerala",
           countryOfDest: "India",
@@ -152,6 +154,9 @@ export default function Home() {
   const handleAction = useCallback((params) => {
     console.log("Redirect to details page for:", params.data.itineraryId);
     // Add routing logic here
+    // nvigate to the page inineraries which have a dynamic routing for itineraryId
+
+    route.push(`/itineraries/${params.data.itineraryId}`);
   }, []);
 
   const gridOptions = useMemo(
