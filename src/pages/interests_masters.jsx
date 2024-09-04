@@ -31,6 +31,7 @@ import styles from "../styles/interests_masters.module.css";
 import { RxDashboard } from "react-icons/rx";
 import { BsFillPlusCircleFill } from "react-icons/bs";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
+import Loading from "@/components/Loading"; // Import the Loading component
 
 export default function InterestsMasters({ initialData }) {
   const [rowData, setRowData] = useState(initialData || []);
@@ -42,21 +43,27 @@ export default function InterestsMasters({ initialData }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [isEditing, setIsEditing] = useState(false);
   const [newInterest, setNewInterest] = useState(""); // For tracking new interest input
+  const [loading, setLoading] = useState(false); // Loading state
   const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-  // useEffect(() => {
-  //   fetchData();
-  // }, []);
-  // const fetchData = async () => {
-  //   try {
-  //     const response = await axios.get(`${baseURL}/data`);
-  //     setRowData(response.data);
-  //   } catch (error) {
-  //     console.error("There was an error fetching the data!", error);
-  //   }
-  // };
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    setLoading(true); // Set loading to true before fetching data
+    try {
+      const response = await axios.get(`${baseURL}/data`);
+      setRowData(response.data);
+    } catch (error) {
+      console.error("There was an error fetching the data!", error);
+    } finally {
+      setLoading(false); // Set loading to false after data is fetched
+    }
+  };
 
   const handleSubmit = async () => {
+    setLoading(true); // Set loading to true before submitting data
     try {
       if (isEditing) {
         // Edit existing data
@@ -82,6 +89,8 @@ export default function InterestsMasters({ initialData }) {
         `There was an error ${isEditing ? "updating" : "adding"} the item!`,
         error
       );
+    } finally {
+      setLoading(false); // Set loading to false after data is submitted
     }
   };
 
@@ -102,11 +111,14 @@ export default function InterestsMasters({ initialData }) {
   };
 
   const handleDelete = async (id) => {
+    setLoading(true); // Set loading to true before deleting data
     try {
       await axios.delete(`${baseURL}/data`, { data: { id } });
       setRowData((prevData) => prevData.filter((item) => item.id !== id));
     } catch (error) {
       console.error("There was an error deleting the item!", error);
+    } finally {
+      setLoading(false); // Set loading to false after data is deleted
     }
   };
 
@@ -141,6 +153,10 @@ export default function InterestsMasters({ initialData }) {
       {
         headerName: "Category Based Interests",
         field: "category_based_interests",
+        valueFormatter: (params) => {
+          // Format the array as a comma-separated string
+          return;
+        },
         cellRenderer: (params) => (
           <Box
             style={{
@@ -200,66 +216,72 @@ export default function InterestsMasters({ initialData }) {
         <title>Interests Masters</title>
       </Head>
       <main className={styles.main}>
-        <Box>
-          <Text fontWeight={600}>Interests Category</Text>
-          <Text>
-            View/manage interest categories and configure preferences.
-          </Text>
-        </Box>
-        <Box w={"100%"} h={"auto"} className="gridContainer">
-          <HStack bgColor={"white"} p={"24px"}>
-            <HStack gap={"12px"} alignItems={"center"}>
-              <RxDashboard color={"#888888"} size={24} />
-              <Heading
-                fontSize={"20px"}
-                fontWeight={600}
-                className="gridContainer"
-              >
-                Interests Category
-              </Heading>
-            </HStack>
-            <Spacer />
-            <Button
-              bgGradient={"linear(to-r, #0099FF, #54AB6A)"}
-              _hover={{ bgGradient: "linear(to-r, #0099FF, #54AB6A)" }}
-              onClick={handleAdd}
-              color={"white"}
-              gap={"8px"}
-            >
-              <BsFillPlusCircleFill size={22} />
-              Add New
-            </Button>
-          </HStack>
-          <AgGridReact
-            className="ag-theme-alpine"
-            rowData={rowData}
-            columnDefs={columnDefs}
-            pagination={true}
-            paginationPageSize={5}
-            paginationPageSizeSelector={[5, 10, 15]}
-            enableCellTextSelection={true}
-            defaultColDef={{
-              filter: true,
-              floatingFilter: true,
-              sortable: true,
-              resizable: true,
-              filterParams: {
-                debounceMs: 0,
-                buttons: ["reset"],
-              },
-            }}
-            domLayout="autoHeight"
-            getRowHeight={(params) => {
-              if (params.data.category_based_interests.length > 1) {
-                return params.data.category_based_interests.length * 45;
-              } else {
-                return 80;
-              }
-            }}
-          />
-        </Box>
+        {loading ? (
+          <Loading />
+        ) : (
+          <>
+            <Box>
+              <Text fontWeight={600}>Interests Category</Text>
+              <Text>
+                View/manage interest categories and configure preferences.
+              </Text>
+            </Box>
+            <Box w={"100%"} h={"auto"} className="gridContainer">
+              <HStack bgColor={"white"} p={"24px"}>
+                <HStack gap={"12px"} alignItems={"center"}>
+                  <RxDashboard color={"#888888"} size={24} />
+                  <Heading
+                    fontSize={"20px"}
+                    fontWeight={600}
+                    className="gridContainer"
+                  >
+                    Interests Category
+                  </Heading>
+                </HStack>
+                <Spacer />
+                <Button
+                  bgGradient={"linear(to-r, #0099FF, #54AB6A)"}
+                  _hover={{ bgGradient: "linear(to-r, #0099FF, #54AB6A)" }}
+                  onClick={handleAdd}
+                  color={"white"}
+                  gap={"8px"}
+                >
+                  <BsFillPlusCircleFill size={22} />
+                  Add New
+                </Button>
+              </HStack>
+              <AgGridReact
+                className="ag-theme-alpine"
+                rowData={rowData}
+                columnDefs={columnDefs}
+                pagination={true}
+                paginationPageSize={5}
+                paginationPageSizeSelector={[5, 10, 15]}
+                enableCellTextSelection={true}
+                defaultColDef={{
+                  filter: true,
+                  floatingFilter: true,
+                  sortable: true,
+                  resizable: true,
+                  filterParams: {
+                    debounceMs: 0,
+                    buttons: ["reset"],
+                  },
+                }}
+                domLayout="autoHeight"
+                getRowHeight={(params) => {
+                  if (params.data.category_based_interests.length > 1) {
+                    return params.data.category_based_interests.length * 45;
+                  } else {
+                    return 80;
+                  }
+                }}
+              />
+            </Box>
+          </>
+        )}
 
-        {/* Modal for Add/Edit */}
+        {/* Modal for Adding/Editing Interests */}
         <Modal isOpen={isOpen} onClose={onClose} isCentered>
           <ModalOverlay zIndex={1000} />
           <ModalContent maxWidth={"512px"}>
@@ -353,24 +375,4 @@ export default function InterestsMasters({ initialData }) {
       </main>
     </>
   );
-}
-
-export async function getServerSideProps() {
-  const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
-  try {
-    const response = await axios.get(`${baseURL}/data`);
-
-    return {
-      props: {
-        initialData: response.data,
-      },
-    };
-  } catch (error) {
-    console.error("Failed to fetch data", error);
-    return {
-      props: {
-        initialData: [],
-      },
-    };
-  }
 }

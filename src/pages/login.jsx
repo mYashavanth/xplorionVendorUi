@@ -56,6 +56,8 @@ export default function Login() {
                 alt="logo"
                 width={400}
                 height={100}
+                priority={true}
+                style={{ objectFit: "cover", width: "auto" }}
               />
             </Center>
           </Flex>
@@ -75,8 +77,9 @@ export default function Login() {
                 height={440}
                 style={{
                   borderRadius: "8px 0px 0px 8px",
+                  objectFit: "cover",
                 }}
-                layout="responsive"
+                priority={true}
               />
             </Box>
             <VStack

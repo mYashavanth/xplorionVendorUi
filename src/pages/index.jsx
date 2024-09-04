@@ -69,6 +69,8 @@ export default function Home() {
   };
 
   const [rowData] = useState(generateRandomData);
+  console.log(rowData);
+  
 
   // Column definitions with floating filters and date filtering
   const columnDefs = useMemo(

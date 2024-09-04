@@ -52,7 +52,14 @@ export default function NavBar() {
         color={"white"}
       >
         <Center gap={"6px"}>
-          <Image src="/navBar/logo.png" alt="logo" width={160} height={20} />
+          <Image
+            src="/navBar/logo.png"
+            alt="logo"
+            width={160}
+            height={20}
+            priority={true}
+            style={{ objectFit: "cover", width: "auto" }}
+          />
         </Center>
         <Spacer />
         <HStack ml={4}>
