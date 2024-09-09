@@ -13,3 +13,6 @@ nav {
   top: 0;
   z-index: 999;
 }
+.loadingSection{
+  height: calc(100vh - var(--navbar-height));
+}

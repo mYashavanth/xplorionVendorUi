@@ -6,7 +6,7 @@ function Loading() {
       display="flex"
       alignItems="center"
       justifyContent="center"
-      height="100vh"
+      className="loadingSection"
     >
       <svg
         width="100"
