@@ -1,4 +1,3 @@
-import Loading from "@/components/Loading";
 import React, { useState, useEffect } from "react";
 import {
   Box,
@@ -15,6 +14,7 @@ import {
   HStack,
   Heading,
   Spacer,
+  filter,
 } from "@chakra-ui/react";
 import axios from "axios";
 import { AgGridReact } from "ag-grid-react";
@@ -25,6 +25,7 @@ import Head from "next/head";
 import styles from "../styles/primary_category.module.css";
 import { FiEdit } from "react-icons/fi";
 import { PiNotepad } from "react-icons/pi";
+import Loading from "@/components/Loading";
 
 export default function PrimaryCategory() {
   const router = useRouter();
@@ -35,6 +36,8 @@ export default function PrimaryCategory() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [authToken, setAuthToken] = useState(null);
   const baseURL = process.env.NEXT_PUBLIC_BASE_URL;
+  const [btnLoading, setBtnLoading] = useState({});
+  const [loading, setLoading] = useState({fetch: true});
 
   useEffect(() => {
     const verifyAuthToken = async () => {
@@ -72,17 +75,22 @@ export default function PrimaryCategory() {
     if (!authToken) return;
 
     try {
+    //   setLoading((prevLoading) => ({ ...prevLoading, fetch: true }));
       const response = await axios.get(
         `${baseURL}/app/masters/primary-category/all/${authToken}`
       );
-      setRowData(Array.isArray(response.data) ? response.data : []);
+      setRowData(response.data);
+      console.log({ response, data: response.data });
     } catch (error) {
       console.error("Error fetching primary categories:", error);
+    } finally {
+      setLoading((prevLoading) => ({ ...prevLoading, fetch: false }));
     }
   };
 
   const handleAddCategory = async () => {
     try {
+      setLoading((prev) => ({ ...prev, add: true }));
       const formData = new FormData();
       formData.append("primaryCategory", primaryCategory);
       formData.append("token", authToken);
@@ -92,11 +100,14 @@ export default function PrimaryCategory() {
       onClose();
     } catch (error) {
       console.error("Error adding category:", error);
+    } finally {
+      setLoading((prev) => ({ ...prev, add: false }));
     }
   };
 
   const handleUpdateCategory = async () => {
     try {
+      setLoading((prev) => ({ ...prev, update: true }));
       const formData = new FormData();
       formData.append("primaryCategory", primaryCategory);
       formData.append("primaryCategoryId", selectedCategory._id);
@@ -110,11 +121,14 @@ export default function PrimaryCategory() {
       onClose();
     } catch (error) {
       console.error("Error updating category:", error);
+    } finally {
+      setLoading((prev) => ({ ...prev, update: false }));
     }
   };
 
   const handleStatusChange = async (categoryId, status) => {
     try {
+      setBtnLoading((prev) => ({ ...prev, [categoryId]: true }));
       const formData = new FormData();
       formData.append("primaryCategoryId", categoryId);
       formData.append("status", status);
@@ -127,33 +141,23 @@ export default function PrimaryCategory() {
       fetchPrimaryCategories();
     } catch (error) {
       console.error("Error updating status:", error);
+    } finally {
+      setBtnLoading((prev) => ({ ...prev, [categoryId]: false }));
     }
   };
 
   const onGridReady = (params) => {
     setGridApi(params.api);
   };
-
   const columns = [
-    { headerName: "Primary Category", field: "primary_category" },
     {
-      headerName: "Status",
-      field: "status",
-      cellRenderer: (params) => (
-        <Button
-          size="sm"
-          colorScheme={params.value === "1" ? "green" : "red"}
-          onClick={() =>
-            handleStatusChange(
-              params.data._id,
-              params.value === "1" ? "0" : "1"
-            )
-          }
-        >
-          {params.value === "1" ? "Active" : "Inactive"}
-        </Button>
-      ),
+      headerName: "S.No",
+      valueGetter: "node.rowIndex + 1", 
+      cellClass: "serial-number-cell", 
+      width: 100,
     },
+    { headerName: "Primary Category", field: "primary_category" },
+
     {
       headerName: "Created Date",
       field: "created_date",
@@ -183,6 +187,26 @@ export default function PrimaryCategory() {
           }
         },
       },
+    },
+    {
+      headerName: "Status",
+      field: "status",
+      filter: false,
+      cellRenderer: (params) => (
+        <Button
+          size="sm"
+          colorScheme={params.value === "1" ? "green" : "red"}
+          onClick={() =>
+            handleStatusChange(
+              params.data._id,
+              params.value === "1" ? "0" : "1"
+            )
+          }
+          isLoading={btnLoading[params.data._id]}
+        >
+          {params.value === "1" ? "Active" : "Inactive"}
+        </Button>
+      ),
     },
     {
       headerName: "Actions",
@@ -219,59 +243,63 @@ export default function PrimaryCategory() {
         <title>Primary Category</title>
       </Head>
       <main className={styles.main}>
-        <Box w={"100%"} h={"auto"} className="gridContainer">
-          <HStack bgColor={"white"} p={"24px"}>
-            <HStack gap={"12px"} alignItems={"center"}>
-              <PiNotepad color={"#888888"} size={24} />
-              <Heading
-                fontSize={"20px"}
-                fontWeight={600}
-                className="gridContainer"
+        {loading.fetch ? (
+          <Loading />
+        ) : (
+          <Box w={"100%"} h={"auto"} className="gridContainer">
+            <HStack bgColor={"white"} p={"24px"}>
+              <HStack gap={"12px"} alignItems={"center"}>
+                <PiNotepad color={"#888888"} size={24} />
+                <Heading
+                  fontSize={"20px"}
+                  fontWeight={600}
+                  className="gridContainer"
+                >
+                  Primary Category
+                </Heading>
+              </HStack>
+              <Spacer />
+              <Button
+                bgGradient={"linear(to-r, #0099FF, #54AB6A)"}
+                _hover={{ bgGradient: "linear(to-r, #0099FF, #54AB6A)" }}
+                color={"white"}
+                gap={"8px"}
+                onClick={() => {
+                  setSelectedCategory(null);
+                  setPrimaryCategory("");
+                  onOpen();
+                }}
               >
-                Primary Category
-              </Heading>
+                Add Primary Category
+              </Button>
             </HStack>
-            <Spacer />
-            <Button
-              bgGradient={"linear(to-r, #0099FF, #54AB6A)"}
-              _hover={{ bgGradient: "linear(to-r, #0099FF, #54AB6A)" }}
-              color={"white"}
-              gap={"8px"}
-              onClick={() => {
-                setSelectedCategory(null);
-                setPrimaryCategory("");
-                onOpen();
+            <AgGridReact
+              className="ag-theme-alpine"
+              rowData={Array.isArray(rowData) ? rowData : []}
+              columnDefs={columns}
+              pagination={true}
+              paginationPageSize={5}
+              paginationPageSizeSelector={[5, 10, 15]}
+              enableCellTextSelection={true}
+              defaultColDef={{
+                sortable: true,
+                filter: true,
+                floatingFilter: true,
+                resizable: true,
+                flex: 1,
+                filterParams: {
+                  debounceMs: 0,
+                  buttons: ["reset"],
+                },
               }}
-            >
-              Add Primary Category
-            </Button>
-          </HStack>
-          <AgGridReact
-            className="ag-theme-alpine"
-            rowData={Array.isArray(rowData) ? rowData : []}
-            columnDefs={columns}
-            pagination={true}
-            paginationPageSize={5}
-            paginationPageSizeSelector={[5, 10, 15]}
-            enableCellTextSelection={true}
-            defaultColDef={{
-              sortable: true,
-              filter: true,
-              floatingFilter: true,
-              resizable: true,
-              flex: 1,
-              filterParams: {
-                debounceMs: 0,
-                buttons: ["reset"],
-              },
-            }}
-            onGridReady={onGridReady}
-            domLayout="autoHeight"
-            getRowHeight={(params) => {
-              return 60;
-            }}
-          />
-        </Box>
+              onGridReady={onGridReady}
+              domLayout="autoHeight"
+              getRowHeight={(params) => {
+                return 60;
+              }}
+            />
+          </Box>
+        )}
 
         {/* Add/Edit Modal */}
         <Modal isOpen={isOpen} onClose={onClose}>
@@ -296,12 +324,16 @@ export default function PrimaryCategory() {
               </Button>
               <Button
                 bgGradient={"linear(to-r, #0099FF, #54AB6A)"}
-                _hover={{ bgGradient: "linear(to-r, #0099FF, #54AB6A)",color:"white" }}
+                _hover={{
+                  bgGradient: "linear(to-r, #0099FF, #54AB6A)",
+                  color: "white",
+                }}
                 color={"white"}
                 mr={3}
                 onClick={
                   selectedCategory ? handleUpdateCategory : handleAddCategory
                 }
+                isLoading={loading.add || loading.update}
               >
                 {selectedCategory ? "Update" : "Create"}
               </Button>

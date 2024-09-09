@@ -20,6 +20,8 @@ export default function NavBar() {
   const router = useRouter();
   const name = "Admin"; // Change name to test
   const navBarRef = useRef(null);
+  const path = router.pathname;
+  console.log({ path });
 
   useEffect(() => {
     if (navBarRef.current) {
@@ -66,8 +68,8 @@ export default function NavBar() {
   ];
 
   const isActive = (path) => router.pathname === path;
-  console.log({router});
-  
+  console.log({ router });
+
   return (
     <nav ref={navBarRef}>
       <Flex
@@ -101,19 +103,22 @@ export default function NavBar() {
           </Center>
         </HStack>
       </Flex>
-
-      <Flex p={"12px 180px"} gap={4} bgColor={"white"}>
-        {navItems.map((item) => (
-          <NavItem
-            key={item.name}
-            name={item.name}
-            icon={item.icon}
-            path={item.path}
-            action={item.action}
-            isActive={isActive(item.path)}
-          />
-        ))}
-      </Flex>
+      {path === "/login" ? (
+        <></>
+      ) : (
+        <Flex p={"12px 180px"} gap={4} bgColor={"white"}>
+          {navItems.map((item) => (
+            <NavItem
+              key={item.name}
+              name={item.name}
+              icon={item.icon}
+              path={item.path}
+              action={item.action}
+              isActive={isActive(item.path)}
+            />
+          ))}
+        </Flex>
+      )}
     </nav>
   );
 }

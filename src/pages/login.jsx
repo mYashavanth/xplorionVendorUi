@@ -9,6 +9,7 @@ import {
   Input,
   InputGroup,
   InputRightElement,
+  Text,
   VStack,
 } from "@chakra-ui/react";
 import Head from "next/head";
@@ -20,7 +21,8 @@ import axios from "axios";
 
 export default function Login() {
   const baseURL = process.env.NEXT_PUBLIC_BASE_URL;
-
+  const [loginFailed, setLoginFailed] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [show, setShow] = useState(false);
   const handleClick = () => setShow(!show);
   const [formData, setFormData] = useState({
@@ -29,6 +31,7 @@ export default function Login() {
   });
 
   const handleChange = (e) => {
+    
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
@@ -48,6 +51,7 @@ export default function Login() {
     console.log({ formData: newFormData, baseURL });
 
     try {
+      setLoading(true);
       const response = await axios.post(
         `${baseURL}/app/super-users/login`,
         newFormData,
@@ -58,14 +62,17 @@ export default function Login() {
         }
       );
       console.log({response});
-      if (response.status === 200) {
+      if (response.data.errFlag === 0) {
         localStorage.setItem("token", response.data.token);
         window.location.href = "/";
       } else {
         console.log(response.data);
+        setLoginFailed(true);
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -151,6 +158,10 @@ export default function Login() {
                       width="100%"
                       value={formData.email}
                       onChange={handleChange}
+                      border={
+                        loginFailed ? "1px solid red" : "1px solid #888888"
+                      }
+                      onClick={() => setLoginFailed(false)}
                       required
                     />
                   </Box>
@@ -167,6 +178,10 @@ export default function Login() {
                         placeholder="Password"
                         value={formData.password}
                         onChange={handleChange}
+                        border={
+                          loginFailed ? "1px solid red" : "1px solid #888888"
+                        }
+                        onClick={() => setLoginFailed(false)}
                         required
                       />
                       <InputRightElement width="4.5rem">
@@ -175,6 +190,9 @@ export default function Login() {
                         </Box>
                       </InputRightElement>
                     </InputGroup>
+                    {loginFailed && (
+                      <Text color={"red"}>Invalid Login Credentials</Text>
+                    )}
                   </Box>
                   <Button
                     type="submit"
@@ -186,6 +204,7 @@ export default function Login() {
                       bgGradient: "linear(to-r, #0099FF, #54AB6A)",
                       boxShadow: "xl",
                     }}
+                    isLoading={loading}
                   >
                     Login
                   </Button>
