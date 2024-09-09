@@ -8,17 +8,55 @@ import {
   Spacer,
   Text,
 } from "@chakra-ui/react";
-import React, { useState, useMemo, useCallback, useRef } from "react";
+import React, {
+  useState,
+  useMemo,
+  useCallback,
+  useRef,
+  useEffect,
+} from "react";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import styles from "../styles/home.module.css";
 import { PiNotepad } from "react-icons/pi";
 import { useRouter } from "next/router";
+import axios from "axios";
 
 export default function Home() {
   const gridApiRef = useRef(null);
-  const route = useRouter();
+  const router = useRouter();
+  const [authToken, setAuthToken] = useState(null);
+
+  useEffect(() => {
+    const verifyAuthToken = async () => {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        router.push("/login");
+        return;
+      }
+
+      try {
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/app/super-users/auth/${token}`
+        );
+
+        if (response.status === 200) {
+          setAuthToken(token);
+        } else {
+          router.push("/login");
+        }
+      } catch (error) {
+        console.error("Authentication failed", error);
+        router.push("/login");
+      }
+    };
+
+    verifyAuthToken();
+  }, [router]);
+
+  console.log({ authToken });
 
   // Function to generate random data with date range having a minimum gap of 2 days
   const generateRandomData = useCallback(() => {
@@ -71,7 +109,6 @@ export default function Home() {
   };
 
   const [rowData] = useState(generateRandomData);
-  
 
   // Column definitions with floating filters and date filtering
   const columnDefs = useMemo(
@@ -156,7 +193,7 @@ export default function Home() {
     // Add routing logic here
     // nvigate to the page inineraries which have a dynamic routing for itineraryId
 
-    route.push(`/itineraries/${params.data.itineraryId}`);
+    router.push(`/itineraries/${params.data.itineraryId}`);
   }, []);
 
   const gridOptions = useMemo(

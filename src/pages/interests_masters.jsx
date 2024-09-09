@@ -31,9 +31,11 @@ import styles from "../styles/interests_masters.module.css";
 import { RxDashboard } from "react-icons/rx";
 import { BsFillPlusCircleFill } from "react-icons/bs";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
-import Loading from "@/components/Loading"; // Import the Loading component
+import Loading from "@/components/Loading";
+import { useRouter } from "next/router";
 
 export default function InterestsMasters({ initialData }) {
+  const router = useRouter();
   const [rowData, setRowData] = useState(initialData || []);
   const [formData, setFormData] = useState({
     id: "",
@@ -45,6 +47,38 @@ export default function InterestsMasters({ initialData }) {
   const [newInterest, setNewInterest] = useState(""); // For tracking new interest input
   const [loading, setLoading] = useState(false); // Loading state
   const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
+  console.log({ baseURL });
+  const [authToken, setAuthToken] = useState(null);
+
+  useEffect(() => {
+    const verifyAuthToken = async () => {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        router.push("/login");
+        return;
+      }
+
+      try {
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/app/super-users/auth/${token}`
+        );
+
+        if (response.status === 200) {
+          setAuthToken(token);
+        } else {
+          router.push("/login");
+        }
+      } catch (error) {
+        console.error("Authentication failed", error);
+        router.push("/login");
+      }
+    };
+
+    verifyAuthToken();
+  }, [router]);
+
+  console.log({ authToken });
 
   useEffect(() => {
     fetchData();

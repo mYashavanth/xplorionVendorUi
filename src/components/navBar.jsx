@@ -46,6 +46,11 @@ export default function NavBar() {
     { name: "Dashboard", icon: AiOutlineHome, path: "/" },
     // { name: "Itineraries", icon: PiNotepad, path: "/login" },
     {
+      name: "Primary Category",
+      icon: PiNotepad,
+      path: "/primary_category",
+    },
+    {
       name: "Interests Masters",
       icon: RxDashboard,
       path: "/interests_masters",
@@ -53,12 +58,16 @@ export default function NavBar() {
     {
       name: "Logout",
       icon: IoLogOutOutline,
-      action: () => console.log("Logout clicked"),
+      action: () => {
+        localStorage.removeItem("token");
+        router.push("/login");
+      },
     },
   ];
 
   const isActive = (path) => router.pathname === path;
-
+  console.log({router});
+  
   return (
     <nav ref={navBarRef}>
       <Flex

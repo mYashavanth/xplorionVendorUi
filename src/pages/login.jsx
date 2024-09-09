@@ -16,8 +16,11 @@ import Image from "next/image";
 import styles from "@/styles/login.module.css";
 import { BiShowAlt } from "react-icons/bi";
 import { BiHide } from "react-icons/bi";
+import axios from "axios";
 
 export default function Login() {
+  const baseURL = process.env.NEXT_PUBLIC_BASE_URL;
+
   const [show, setShow] = useState(false);
   const handleClick = () => setShow(!show);
   const [formData, setFormData] = useState({
@@ -32,10 +35,40 @@ export default function Login() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(formData);
+
+    // Create a new FormData object
+    const newFormData = new FormData();
+
+    // Append form data
+    newFormData.append("email", formData.email);
+    newFormData.append("password", formData.password);
+
+    console.log({ formData: newFormData, baseURL });
+
+    try {
+      const response = await axios.post(
+        `${baseURL}/app/super-users/login`,
+        newFormData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      console.log({response});
+      if (response.status === 200) {
+        localStorage.setItem("token", response.data.token);
+        window.location.href = "/";
+      } else {
+        console.log(response.data);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
+
   return (
     <>
       <Head>
