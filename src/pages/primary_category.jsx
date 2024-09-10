@@ -26,6 +26,7 @@ import styles from "../styles/primary_category.module.css";
 import { FiEdit } from "react-icons/fi";
 import { PiNotepad } from "react-icons/pi";
 import Loading from "@/components/Loading";
+import { BsFillPlusCircleFill } from "react-icons/bs";
 
 export default function PrimaryCategory() {
   const router = useRouter();
@@ -37,7 +38,7 @@ export default function PrimaryCategory() {
   const [authToken, setAuthToken] = useState(null);
   const baseURL = process.env.NEXT_PUBLIC_BASE_URL;
   const [btnLoading, setBtnLoading] = useState({});
-  const [loading, setLoading] = useState({fetch: true});
+  const [loading, setLoading] = useState({ fetch: true });
 
   useEffect(() => {
     const verifyAuthToken = async () => {
@@ -75,7 +76,7 @@ export default function PrimaryCategory() {
     if (!authToken) return;
 
     try {
-    //   setLoading((prevLoading) => ({ ...prevLoading, fetch: true }));
+      //   setLoading((prevLoading) => ({ ...prevLoading, fetch: true }));
       const response = await axios.get(
         `${baseURL}/app/masters/primary-category/all/${authToken}`
       );
@@ -152,8 +153,8 @@ export default function PrimaryCategory() {
   const columns = [
     {
       headerName: "S.No",
-      valueGetter: "node.rowIndex + 1", 
-      cellClass: "serial-number-cell", 
+      valueGetter: "node.rowIndex + 1",
+      cellClass: "serial-number-cell",
       width: 100,
     },
     { headerName: "Primary Category", field: "primary_category" },
@@ -270,6 +271,7 @@ export default function PrimaryCategory() {
                   onOpen();
                 }}
               >
+                <BsFillPlusCircleFill size={22} />
                 Add Primary Category
               </Button>
             </HStack>
@@ -302,16 +304,23 @@ export default function PrimaryCategory() {
         )}
 
         {/* Add/Edit Modal */}
-        <Modal isOpen={isOpen} onClose={onClose}>
-          <ModalOverlay />
-          <ModalContent>
-            <ModalHeader>
+        <Modal isOpen={isOpen} onClose={onClose} isCentered>
+          <ModalOverlay zIndex={1000} />
+          <ModalContent maxWidth={"512px"}>
+            <ModalHeader borderBottom={"1px solid #E5E7EB"} p={"20px 34px"}>
               {selectedCategory
                 ? "Edit Primary Category"
                 : "Add Primary Category"}
             </ModalHeader>
-            <ModalCloseButton />
-            <ModalBody>
+            <ModalCloseButton
+              borderRadius={"full"}
+              bgColor={"#F5F6F7"}
+              _hover={{ bgColor: "#E5E7EB" }}
+              w={"40px"}
+              h={"40px"}
+              m={"8px 24px 0 0"}
+            />
+            <ModalBody p={"20px 34px 100px"} bgColor={"#f5f6f7"}>
               <Input
                 placeholder="Primary Category"
                 value={primaryCategory}
@@ -329,7 +338,7 @@ export default function PrimaryCategory() {
                   color: "white",
                 }}
                 color={"white"}
-                mr={3}
+                ml={3}
                 onClick={
                   selectedCategory ? handleUpdateCategory : handleAddCategory
                 }

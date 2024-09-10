@@ -390,7 +390,9 @@ export default function InterestsMasters({ initialData }) {
             </ModalBody>
 
             <ModalFooter>
-              <Button onClick={onClose}>Cancel</Button>
+              <Button variant="ghost" onClick={onClose}>
+                Cancel
+              </Button>
               <Button
                 bgGradient={"linear(to-r, #0099FF, #54AB6A)"}
                 _hover={{
