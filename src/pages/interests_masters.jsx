@@ -25,6 +25,9 @@ import {
   TagCloseButton,
   Heading,
   Spacer,
+  Skeleton,
+  SkeletonCircle,
+  SkeletonText,
 } from "@chakra-ui/react";
 import Head from "next/head";
 import styles from "../styles/interests_masters.module.css";
@@ -251,7 +254,31 @@ export default function InterestsMasters({ initialData }) {
       </Head>
       <main className={styles.main}>
         {loading ? (
-          <Loading />
+          <Box w={"100%"} h={"auto"}>
+            {/* Skeleton for the top title section */}
+            <Box mb="6">
+              <Skeleton height="24px" width="180px" mb="4" />
+              <Skeleton height="16px" width="250px" />
+            </Box>
+
+            {/* Skeleton for the HStack with button */}
+            <Box bgColor={"white"} p={"24px"} mb="6">
+              <HStack>
+                {/* Skeleton for the dashboard icon and heading */}
+                <SkeletonCircle size="10" />
+                <SkeletonText noOfLines={1} width="200px" />
+                <Spacer />
+                {/* Skeleton for the Add New button */}
+                <Skeleton height="40px" width="150px" />
+              </HStack>
+            </Box>
+
+            {/* Skeleton for the ag-Grid table */}
+            <Skeleton height="40px" mb="4" />
+            <Skeleton height="40px" mb="4" />
+            <Skeleton height="40px" mb="4" />
+            <Skeleton height="40px" />
+          </Box>
         ) : (
           <>
             <Box>

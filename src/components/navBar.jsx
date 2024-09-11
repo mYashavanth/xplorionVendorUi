@@ -88,20 +88,24 @@ export default function NavBar() {
           />
         </Center>
         <Spacer />
-        <HStack ml={4}>
-          <Text>Welcome, {name}</Text>
-          <Center
-            w="50px"
-            h="50px"
-            bg="#005CE8"
-            fontWeight="bold"
-            borderRadius="full"
-            justifyContent="center"
-            alignItems="center"
-          >
-            {getInitials(name)}
-          </Center>
-        </HStack>
+        {path === "/login" ? (
+          <></>
+        ) : (
+          <HStack ml={4}>
+            <Text>Welcome, {name}</Text>
+            <Center
+              w="50px"
+              h="50px"
+              bg="#005CE8"
+              fontWeight="bold"
+              borderRadius="full"
+              justifyContent="center"
+              alignItems="center"
+            >
+              {getInitials(name)}
+            </Center>
+          </HStack>
+        )}
       </Flex>
       {path === "/login" ? (
         <></>

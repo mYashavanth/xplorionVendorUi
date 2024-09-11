@@ -84,7 +84,7 @@ export default function Login() {
       </Head>
       <main className={styles.main}>
         <Flex direction="column" alignItems={"center"} gap={"24px"}>
-          <Flex
+          {/* <Flex
             direction="column"
             gap={5}
             // border={"1px solid black"}
@@ -100,7 +100,7 @@ export default function Login() {
                 style={{ objectFit: "cover", width: "auto" }}
               />
             </Center>
-          </Flex>
+          </Flex> */}
           <Flex>
             <Box
               position="relative"

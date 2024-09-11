@@ -15,6 +15,8 @@ import {
   Heading,
   Spacer,
   filter,
+  Skeleton,
+  SkeletonText,
 } from "@chakra-ui/react";
 import axios from "axios";
 import { AgGridReact } from "ag-grid-react";
@@ -245,7 +247,21 @@ export default function PrimaryCategory() {
       </Head>
       <main className={styles.main}>
         {loading.fetch ? (
-          <Loading />
+          <Box w={"100%"} h={"auto"} className="gridContainer">
+            <HStack bgColor={"white"} p={"24px"}>
+              <HStack gap={"12px"} alignItems={"center"}>
+                <Skeleton height="24px" width="24px" borderRadius="full" />
+                <SkeletonText noOfLines={1} width="200px" />
+              </HStack>
+              <Spacer />
+              <Skeleton height="40px" width="160px" borderRadius="md" />
+            </HStack>
+            <Skeleton height="60px" width="100%" mt={4} />
+            <Skeleton height="60px" width="100%" mt={2} />
+            <Skeleton height="60px" width="100%" mt={2} />
+            <Skeleton height="60px" width="100%" mt={2} />
+            <Skeleton height="60px" width="100%" mt={2} />
+          </Box>
         ) : (
           <Box w={"100%"} h={"auto"} className="gridContainer">
             <HStack bgColor={"white"} p={"24px"}>
