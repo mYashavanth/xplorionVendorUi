@@ -15,6 +15,7 @@ import { AiOutlineHome } from "react-icons/ai";
 import { PiNotepad } from "react-icons/pi";
 import { RxDashboard } from "react-icons/rx";
 import { IoLogOutOutline } from "react-icons/io5";
+import { PiUsersThreeThin } from "react-icons/pi";
 
 export default function NavBar() {
   const router = useRouter();
@@ -47,6 +48,11 @@ export default function NavBar() {
   const navItems = [
     { name: "Dashboard", icon: AiOutlineHome, path: "/" },
     // { name: "Itineraries", icon: PiNotepad, path: "/login" },
+    {
+      name: "Signed Up Users",
+      icon: PiUsersThreeThin,
+      path: "/signed_up_users",
+    },
     {
       name: "Primary Category",
       icon: PiNotepad,
