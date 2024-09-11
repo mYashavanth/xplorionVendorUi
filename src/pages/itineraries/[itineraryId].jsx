@@ -103,6 +103,7 @@ export default function Itinerary() {
           borderBottom={"1px dashed gray"}
           className={styles.headerSection}
           p={"16px 0"}
+          bgColor={"#f5f6f7"}
         >
           <VStack alignItems={"flex-start"} gap={"34px"}>
             <Heading className="heading">
@@ -154,7 +155,7 @@ export default function Itinerary() {
         </Flex>
 
         {/* Sticky navigation bar and sections */}
-        <Flex  border={"1px solid black"}>
+        <Flex border={"1px solid black"}>
           {/* In-page navigation on the left */}
           <Box
             ref={navRef}
