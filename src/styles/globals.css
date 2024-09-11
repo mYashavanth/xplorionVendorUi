@@ -2,6 +2,7 @@ body {
   font-family: "Public Sans", sans-serif !important;
   background-color: #f5f6f7 !important;
 }
+.heading,
 .gridContainer,
 .ag-theme-alpine,
 .ag-theme-alpine .ag-header-cell-label,

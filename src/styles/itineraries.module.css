@@ -1,0 +1,11 @@
+.main {
+  padding: 24px 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.headerSection{
+    position: sticky;
+    top: var(--navbar-height);
+}
