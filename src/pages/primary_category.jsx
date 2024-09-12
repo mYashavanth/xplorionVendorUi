@@ -27,7 +27,6 @@ import Head from "next/head";
 import styles from "../styles/primary_category.module.css";
 import { FiEdit } from "react-icons/fi";
 import { PiNotepad } from "react-icons/pi";
-import Loading from "@/components/Loading";
 import { BsFillPlusCircleFill } from "react-icons/bs";
 
 export default function PrimaryCategory() {
@@ -157,7 +156,11 @@ export default function PrimaryCategory() {
       headerName: "S.No",
       valueGetter: "node.rowIndex + 1",
       cellClass: "serial-number-cell",
-      width: 100,
+      width: 150,
+      flex: false,
+      filter: false,
+      sortable: false,
+      suppressHeaderMenuButton: true,
     },
     { headerName: "Primary Category", field: "primary_category" },
 
@@ -198,16 +201,13 @@ export default function PrimaryCategory() {
       cellRenderer: (params) => (
         <Button
           size="sm"
-          colorScheme={params.value === "1" ? "green" : "red"}
+          colorScheme={params.value === 1 ? "green" : "red"}
           onClick={() =>
-            handleStatusChange(
-              params.data._id,
-              params.value === "1" ? "0" : "1"
-            )
+            handleStatusChange(params.data._id, params.value === 1 ? 0 : 1)
           }
           isLoading={btnLoading[params.data._id]}
         >
-          {params.value === "1" ? "Active" : "Inactive"}
+          {params.value === 1 ? "Active" : "Inactive"}
         </Button>
       ),
     },

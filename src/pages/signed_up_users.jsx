@@ -100,9 +100,12 @@ export default function SignedUpUsers() {
   const columnDefs = [
     {
       headerName: "Sl. No.",
-      valueGetter: (params) => params.node.rowIndex + 1, // Generates 1, 2, 3, ...
-      width: 100,
+      valueGetter: (params) => params.node.rowIndex + 1,
+      width: 150,
+      flex: false,
       filter: false,
+      sortable: false,
+      suppressHeaderMenuButton: true,
     },
     { field: "username", headerName: "Username" },
     { field: "email", headerName: "Email" },
