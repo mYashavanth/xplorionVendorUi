@@ -34,12 +34,11 @@ import styles from "../styles/interests_masters.module.css";
 import { RxDashboard } from "react-icons/rx";
 import { BsFillPlusCircleFill } from "react-icons/bs";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
-import Loading from "@/components/Loading";
 import { useRouter } from "next/router";
 
-export default function InterestsMasters({ initialData }) {
+export default function InterestsMasters() {
   const router = useRouter();
-  const [rowData, setRowData] = useState(initialData || []);
+  const [rowData, setRowData] = useState([]);
   const [formData, setFormData] = useState({
     id: "",
     interest_category: "",
