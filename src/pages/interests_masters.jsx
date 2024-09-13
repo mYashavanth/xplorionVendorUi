@@ -28,12 +28,14 @@ import {
   Skeleton,
   SkeletonCircle,
   SkeletonText,
+  Spinner,
+  Select,
 } from "@chakra-ui/react";
 import Head from "next/head";
 import styles from "../styles/interests_masters.module.css";
 import { RxDashboard } from "react-icons/rx";
 import { BsFillPlusCircleFill } from "react-icons/bs";
-import { FiEdit, FiTrash2 } from "react-icons/fi";
+import { FiEdit, FiTrash2, FiEdit3 } from "react-icons/fi";
 import { useRouter } from "next/router";
 
 export default function InterestsMasters() {
@@ -41,16 +43,59 @@ export default function InterestsMasters() {
   const [rowData, setRowData] = useState([]);
   const [formData, setFormData] = useState({
     id: "",
-    interest_category: "",
-    category_based_interests: [],
+    primary_category: "",
+    sub_category_data: [],
   });
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [isEditing, setIsEditing] = useState(false);
-  const [newInterest, setNewInterest] = useState(""); // For tracking new interest input
-  const [loading, setLoading] = useState(false); // Loading state
+  const [newInterest, setNewInterest] = useState("");
+  const [loading, setLoading] = useState(true);
   const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
   console.log({ baseURL });
   const [authToken, setAuthToken] = useState(null);
+  console.log({ authToken, rowData });
+  const [btnLoading, setBtnLoading] = useState({});
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentSubCategory, setCurrentSubCategory] = useState({
+    subCategoryId: "",
+    subCategoryName: "",
+  });
+  const [primary_categorys, setPrimaryCategories] = useState([]);
+
+  const openEditModal = (subCategoryId, subCategoryName) => {
+    setCurrentSubCategory({ subCategoryId, subCategoryName });
+    setIsModalOpen(true);
+  };
+  const handleUpdateSubCategory = async () => {
+    try {
+      const token = authToken;
+      const formData = new FormData();
+
+      // Append the fields to FormData
+      formData.append("subCategory", currentSubCategory.subCategoryName);
+      formData.append("subCategoryId", currentSubCategory.subCategoryId);
+      formData.append("token", token);
+
+      const response = await axios.post(
+        "https://xplorionai-bryz7.ondigitalocean.app/app/masters/sub-category/update",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        console.log("Subcategory updated successfully");
+        setIsModalOpen(false);
+        fetchData();
+      }
+    } catch (error) {
+      console.error("Error updating subcategory:", error);
+    }
+  };
 
   useEffect(() => {
     const verifyAuthToken = async () => {
@@ -80,29 +125,43 @@ export default function InterestsMasters() {
     verifyAuthToken();
   }, [router]);
 
-  console.log({ authToken });
-
   useEffect(() => {
-    fetchData();
-  }, []);
+    const fetchPrimaryCategories = async () => {
+      if (!authToken) return;
+      try {
+        const response = await axios.get(
+          `https://xplorionai-bryz7.ondigitalocean.app/app/masters/primary-category/all/active/${authToken}`
+        );
+        setPrimaryCategories(response.data);
+        console.log({ primary_categorys: response, data: response.data });
+      } catch (error) {
+        console.error("Error fetching primary categories:", error);
+      }
+    };
 
+    fetchPrimaryCategories();
+    fetchData();
+  }, [authToken]);
   const fetchData = async () => {
-    setLoading(true); // Set loading to true before fetching data
+    if (!authToken) return;
     try {
-      const response = await axios.get(`${baseURL}/data`);
+      const response = await axios.get(
+        `https://xplorionai-bryz7.ondigitalocean.app/app/masters/sub-category/all/${authToken}`
+      );
+
+      console.log({ response });
       setRowData(response.data);
     } catch (error) {
       console.error("There was an error fetching the data!", error);
     } finally {
-      setLoading(false); // Set loading to false after data is fetched
+      setLoading(false);
     }
   };
 
   const handleSubmit = async () => {
-    setLoading(true); // Set loading to true before submitting data
+    setLoading(true);
     try {
       if (isEditing) {
-        // Edit existing data
         const response = await axios.put(`${baseURL}/data`, formData);
         setRowData((prevData) =>
           prevData.map((item) =>
@@ -110,7 +169,6 @@ export default function InterestsMasters() {
           )
         );
       } else {
-        // Add new data
         const newId = rowData.length
           ? Math.max(...rowData.map((item) => item.id)) + 1
           : 1;
@@ -126,12 +184,16 @@ export default function InterestsMasters() {
         error
       );
     } finally {
-      setLoading(false); // Set loading to false after data is submitted
+      setLoading(false);
     }
   };
 
   const handleEdit = (data) => {
-    setFormData(data);
+    setFormData({
+      id: data.id,
+      primary_category: data.primary_category_id,
+      sub_category_data: data.sub_category_data,
+    });
     setIsEditing(true);
     onOpen();
   };
@@ -140,72 +202,149 @@ export default function InterestsMasters() {
     setFormData({
       id: "",
       interest_category: "",
-      category_based_interests: [],
+      sub_category_data: [],
     });
     setIsEditing(false);
     onOpen();
   };
 
-  const handleDelete = async (id) => {
-    setLoading(true); // Set loading to true before deleting data
-    try {
-      await axios.delete(`${baseURL}/data`, { data: { id } });
-      setRowData((prevData) => prevData.filter((item) => item.id !== id));
-    } catch (error) {
-      console.error("There was an error deleting the item!", error);
-    } finally {
-      setLoading(false); // Set loading to false after data is deleted
-    }
-  };
-
-  // Add new interest to the category_based_interests array
   const handleAddInterest = () => {
     if (newInterest) {
       setFormData((prevFormData) => ({
         ...prevFormData,
-        category_based_interests: [
-          ...prevFormData.category_based_interests,
-          newInterest,
-        ],
+        sub_category_data: [...prevFormData.sub_category_data, newInterest],
       }));
-      setNewInterest(""); // Clear the input
+      setNewInterest("");
     }
   };
 
-  // Remove interest from the category_based_interests array
   const handleRemoveInterest = (interest) => {
     setFormData((prevFormData) => ({
       ...prevFormData,
-      category_based_interests: prevFormData.category_based_interests.filter(
+      sub_category_data: prevFormData.sub_category_data.filter(
         (item) => item !== interest
       ),
     }));
   };
+  const handleStatusChange = async (subCategoryId, currentStatus) => {
+    try {
+      setBtnLoading((prev) => ({ ...prev, [subCategoryId]: true }));
+      const newStatus = currentStatus === 1 ? 0 : 1;
+
+      const formData = new FormData();
+      formData.append("status", newStatus);
+      formData.append("subCategoryId", subCategoryId);
+      formData.append("token", authToken);
+
+      await axios.post(
+        "https://xplorionai-bryz7.ondigitalocean.app/app/masters/sub-category/update/status",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      fetchData();
+    } catch (error) {
+      console.error("Failed to update status:", error);
+    } finally {
+      setBtnLoading((prev) => ({ ...prev, [subCategoryId]: false }));
+    }
+  };
 
   const columnDefs = useMemo(
     () => [
-      { headerName: "ID", field: "id", flex: 1 },
-      { headerName: "Interest Category", field: "interest_category", flex: 3 },
+      {
+        headerName: "S.No",
+        valueGetter: "node.rowIndex + 1",
+        cellClass: "serial-number-cell",
+        width: 150,
+        flex: false,
+        filter: false,
+        sortable: false,
+        suppressHeaderMenuButton: true,
+      },
+      {
+        headerName: "Interest Category",
+        field: "primary_category_id",
+        flex: 3,
+      },
       {
         headerName: "Category Based Interests",
-        field: "category_based_interests",
+        field: "sub_category_data",
         valueFormatter: (params) => {
-          // Format the array as a comma-separated string
-          return;
+          const subCategories = params.value.map(
+            (item) => item.sub_category_name
+          );
+          return subCategories.join(", ");
         },
-        cellRenderer: (params) => (
-          <Box
-            style={{
-              minHeight: "100px",
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            {params.value.map((item) => (
-              <Text key={item}>{item}</Text>
-            ))}
-          </Box>
-        ),
+        cellRenderer: (params) => {
+          return (
+            <Box
+              minH={"100px"}
+              display={"flex"}
+              flexDirection={"column"}
+              mt={3}
+              gap={2}
+            >
+              {params.value.map((item) => (
+                <HStack key={item.sub_category_id}>
+                  <Tag
+                    color={item.status === 1 ? "green.700" : "gray.700"}
+                    border={
+                      item.status === 1 ? "1px solid green" : "1px solid gray"
+                    }
+                    bgColor={item.status === 1 ? "#f1fff6" : "#f4f9ff"}
+                    cursor={
+                      btnLoading[item.sub_category_id]
+                        ? "not-allowed"
+                        : "pointer"
+                    }
+                    onClick={
+                      !btnLoading[item.sub_category_id]
+                        ? () =>
+                            handleStatusChange(
+                              item.sub_category_id,
+                              item.status
+                            )
+                        : null
+                    }
+                    w={"fit-content"}
+                    minW={"100px"}
+                  >
+                    {btnLoading[item.sub_category_id] ? (
+                      <Spinner
+                        size="sm"
+                        color={item.status === 1 ? "green.700" : "gray.700"}
+                      />
+                    ) : (
+                      item.sub_category_name
+                    )}
+                    {/* Add Edit Icon */}
+                  </Tag>
+                  <Button
+                    size="xs"
+                    ml={2}
+                    onClick={() =>
+                      openEditModal(
+                        item.sub_category_id,
+                        item.sub_category_name
+                      )
+                    }
+                    bg={"white"}
+                    _hover={{ bg: "gray.100" }}
+                    border={"1px solid #626C70"}
+                  >
+                    <FiEdit3 size={"12px"} color={"#626C70"} />
+                  </Button>
+                </HStack>
+              ))}
+            </Box>
+          );
+        },
+
         flex: 3,
       },
       {
@@ -213,37 +352,27 @@ export default function InterestsMasters() {
         field: "action",
         filter: false,
         flex: 2,
-        cellRenderer: (params) => (
-          <HStack spacing={2} mt={3}>
-            <Button
-              borderRadius={"full"}
-              size="sm"
-              onClick={() => handleEdit(params.data)}
-              w={"48px"}
-              h={"48px"}
-              bgColor={"transparent"}
-              _hover={{ bgColor: "#f5f6f7" }}
-              border={"1px solid #626C70"}
-            >
-              <FiEdit color={"#626C70"} size={"24px"} />
-            </Button>
-            <Button
-              borderRadius={"full"}
-              size="sm"
-              onClick={() => handleDelete(params.data.id)}
-              w={"48px"}
-              h={"48px"}
-              bgColor={"transparent"}
-              _hover={{ bgColor: "#f5f6f7" }}
-              border={"1px solid #626C70"}
-            >
-              <FiTrash2 color={"#626C70"} size={"24px"} />
-            </Button>
-          </HStack>
-        ),
+        cellRenderer: (params) => {
+          return (
+            <HStack spacing={2} mt={3}>
+              <Button
+                borderRadius={"full"}
+                size="sm"
+                onClick={() => handleEdit(params.data)}
+                w={"48px"}
+                h={"48px"}
+                bgColor={"transparent"}
+                _hover={{ bgColor: "#f5f6f7" }}
+                border={"1px solid #626C70"}
+              >
+                <FiEdit color={"#626C70"} size={"24px"} />
+              </Button>
+            </HStack>
+          );
+        },
       },
     ],
-    []
+    [btnLoading]
   );
 
   return (
@@ -254,25 +383,18 @@ export default function InterestsMasters() {
       <main className={styles.main}>
         {loading ? (
           <Box w={"100%"} h={"auto"}>
-            {/* Skeleton for the top title section */}
             <Box mb="6">
               <Skeleton height="24px" width="180px" mb="4" />
               <Skeleton height="16px" width="250px" />
             </Box>
-
-            {/* Skeleton for the HStack with button */}
             <Box bgColor={"white"} p={"24px"} mb="6">
               <HStack>
-                {/* Skeleton for the dashboard icon and heading */}
                 <SkeletonCircle size="10" />
                 <SkeletonText noOfLines={1} width="200px" />
                 <Spacer />
-                {/* Skeleton for the Add New button */}
                 <Skeleton height="40px" width="150px" />
               </HStack>
             </Box>
-
-            {/* Skeleton for the ag-Grid table */}
             <Skeleton height="40px" mb="4" />
             <Skeleton height="40px" mb="4" />
             <Skeleton height="40px" mb="4" />
@@ -330,12 +452,14 @@ export default function InterestsMasters() {
                 }}
                 domLayout="autoHeight"
                 getRowHeight={(params) => {
-                  if (params.data.category_based_interests.length > 1) {
-                    return params.data.category_based_interests.length * 45;
+                  if (params.data.sub_category_data.length > 1) {
+                    return params.data.sub_category_data.length * 45;
                   } else {
                     return 80;
                   }
                 }}
+                // change the row hover color
+                getRowClass={() => styles.rowHover}
               />
             </Box>
           </>
@@ -360,16 +484,38 @@ export default function InterestsMasters() {
               <VStack spacing={6}>
                 <FormControl>
                   <FormLabel>Interest Category</FormLabel>
-                  <Input
-                    placeholder="Interest Category"
-                    value={formData.interest_category}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        interest_category: e.target.value,
-                      })
-                    }
-                  />
+                  {isEditing ? (
+                    <Input
+                      placeholder="Interest Category"
+                      value={formData.primary_category}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          primary_category: e.target.value,
+                        })
+                      }
+                    />
+                  ) : (
+                    <Select
+                      value={formData.primary_category}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          primary_category: e.target.value,
+                        })
+                      }
+                    >
+                      <option value="">Select Interest Category</option>
+                      {primary_categorys.map((category) => (
+                        <option
+                          key={category._id}
+                          value={category.primary_category}
+                        >
+                          {category.primary_category}
+                        </option>
+                      ))}
+                    </Select>
+                  )}
                 </FormControl>
                 <FormControl>
                   <FormLabel>Category Based Interests</FormLabel>
@@ -390,25 +536,23 @@ export default function InterestsMasters() {
                   <VStack mt={4} spacing={0} alignItems={"flex-start"}>
                     <FormLabel>Associated interests</FormLabel>
                     <Box display="flex" flexWrap="wrap">
-                      {formData.category_based_interests.map(
-                        (interest, index) => (
-                          <Tag
-                            key={index}
-                            size="md"
-                            borderRadius="4px"
-                            variant="outline"
-                            colorScheme="blue"
-                            m={1}
-                            p={2}
-                            bgColor={"#EDF2FE"}
-                          >
-                            <TagLabel>{interest}</TagLabel>
-                            <TagCloseButton
-                              onClick={() => handleRemoveInterest(interest)}
-                            />
-                          </Tag>
-                        )
-                      )}
+                      {formData.sub_category_data.map((interest, index) => (
+                        <Tag
+                          key={index}
+                          size="md"
+                          borderRadius="4px"
+                          variant="outline"
+                          colorScheme="blue"
+                          m={1}
+                          p={2}
+                          bgColor={"#EDF2FE"}
+                        >
+                          <TagLabel>{interest.sub_category_name}</TagLabel>
+                          <TagCloseButton
+                            onClick={() => handleRemoveInterest(interest)}
+                          />
+                        </Tag>
+                      ))}
                     </Box>
                   </VStack>
                 </FormControl>
@@ -430,6 +574,37 @@ export default function InterestsMasters() {
                 onClick={handleSubmit}
               >
                 {isEditing ? "Update" : "Create"}
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
+        {/* Modal for Editing Subcategory */}
+        <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+          <ModalOverlay />
+          <ModalContent>
+            <ModalHeader>Edit Subcategory</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>
+              <Input
+                value={currentSubCategory.subCategoryName}
+                onChange={(e) =>
+                  setCurrentSubCategory({
+                    ...currentSubCategory,
+                    subCategoryName: e.target.value,
+                  })
+                }
+              />
+            </ModalBody>
+            <ModalFooter>
+              <Button
+                colorScheme="blue"
+                mr={3}
+                onClick={handleUpdateSubCategory}
+              >
+                Save
+              </Button>
+              <Button variant="ghost" onClick={() => setIsModalOpen(false)}>
+                Cancel
               </Button>
             </ModalFooter>
           </ModalContent>

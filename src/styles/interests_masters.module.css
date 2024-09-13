@@ -5,3 +5,6 @@
   /* height: 100vh; */
   gap: 24px
 }
+.rowHover:hover {
+  background-color: #f5f5f5;
+}
