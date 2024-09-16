@@ -70,6 +70,7 @@ export default function SignedUpUsers() {
         `${baseURL}/app/super-admin/app-users/all/${authToken}`
       );
       setRowData(response.data);
+      console.log({ response, data: response.data });
     } catch (error) {
       console.error("Error fetching data:", error.message);
     } finally {
@@ -106,6 +107,11 @@ export default function SignedUpUsers() {
       filter: false,
       sortable: false,
       suppressHeaderMenuButton: true,
+    },
+    {
+      field: "app_user_name",
+      headerName: "App User Name",
+      valueGetter: (params) => params.data.app_user_name || "-",
     },
     { field: "username", headerName: "Username" },
     { field: "email", headerName: "Email" },
