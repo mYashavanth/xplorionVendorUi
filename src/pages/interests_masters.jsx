@@ -41,8 +41,9 @@ import { useRouter } from "next/router";
 export default function InterestsMasters() {
   const router = useRouter();
   const [rowData, setRowData] = useState([]);
+  const [initialSubCategories, setInitialSubCategories] = useState([]);
   const [formData, setFormData] = useState({
-    id: "",
+    primary_category_id: "",
     primary_category: "",
     sub_category_data: [],
   });
@@ -50,8 +51,8 @@ export default function InterestsMasters() {
   const [isEditing, setIsEditing] = useState(false);
   const [newInterest, setNewInterest] = useState("");
   const [loading, setLoading] = useState(true);
-  const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
-  console.log({ baseURL });
+  const baseURL = process.env.NEXT_PUBLIC_BASE_URL;
+  // console.log({ baseURL });
   const [authToken, setAuthToken] = useState(null);
   console.log({ authToken, rowData });
   const [btnLoading, setBtnLoading] = useState({});
@@ -78,7 +79,7 @@ export default function InterestsMasters() {
       formData.append("token", token);
 
       const response = await axios.post(
-        "https://xplorionai-bryz7.ondigitalocean.app/app/masters/sub-category/update",
+        `${baseURL}/app/masters/sub-category/update`,
         formData,
         {
           headers: {
@@ -130,7 +131,7 @@ export default function InterestsMasters() {
       if (!authToken) return;
       try {
         const response = await axios.get(
-          `https://xplorionai-bryz7.ondigitalocean.app/app/masters/primary-category/all/active/${authToken}`
+          `${baseURL}/app/masters/primary-category/all/active/${authToken}`
         );
         setPrimaryCategories(response.data);
         console.log({ primary_categorys: response, data: response.data });
@@ -146,10 +147,10 @@ export default function InterestsMasters() {
     if (!authToken) return;
     try {
       const response = await axios.get(
-        `https://xplorionai-bryz7.ondigitalocean.app/app/masters/sub-category/all/${authToken}`
+        `${baseURL}/app/masters/sub-category/all/${authToken}`
       );
 
-      console.log({ response });
+      // console.log({ response });
       setRowData(response.data);
     } catch (error) {
       console.error("There was an error fetching the data!", error);
@@ -162,21 +163,70 @@ export default function InterestsMasters() {
     setLoading(true);
     try {
       if (isEditing) {
-        const response = await axios.put(`${baseURL}/data`, formData);
-        setRowData((prevData) =>
-          prevData.map((item) =>
-            item.id === response.data.id ? response.data : item
-          )
+        const initialSubCategoriesData = initialSubCategories.map(
+          (item) => item.sub_category_name
         );
-      } else {
-        const newId = rowData.length
-          ? Math.max(...rowData.map((item) => item.id)) + 1
-          : 1;
-        const newData = { ...formData, id: newId };
+        const editFormData = new FormData();
 
-        const response = await axios.post(`${baseURL}/data`, newData);
-        setRowData((prevData) => [...prevData, response.data]);
+        // Append the fields to FormData
+        editFormData.append("primaryCategoryId", formData.primary_category_id);
+        editFormData.append(
+          "subCategory",
+          JSON.stringify([
+            ...initialSubCategoriesData,
+            ...formData.sub_category_data,
+          ])
+        );
+        editFormData.append("token", authToken);
+        console.log({
+          primaryCategoryId: formData.primary_category_id,
+          subCategory: JSON.stringify([
+            ...initialSubCategoriesData,
+            ...formData.sub_category_data,
+          ]),
+          token: authToken,
+        });
+
+        const response = await axios.post(
+          `${baseURL}/app/masters/sub-category/add`,
+          editFormData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+
+        console.log({ response });
+      } else {
+        const addFormData = new FormData();
+        addFormData.append("primaryCategoryId", formData.primary_category_id);
+        addFormData.append(
+          "subCategory",
+          JSON.stringify(formData.sub_category_data)
+        );
+        addFormData.append("token", authToken);
+
+        console.log({
+          primaryCategoryId: formData.primary_category_id,
+          subCategory: JSON.stringify(formData.sub_category_data),
+          token: authToken,
+        });
+
+        const response = await axios.post(
+          `${baseURL}/app/masters/sub-category/add`,
+          addFormData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+
+        console.log({ response });
       }
+
+      fetchData();
       onClose();
     } catch (error) {
       console.error(
@@ -190,20 +240,22 @@ export default function InterestsMasters() {
 
   const handleEdit = (data) => {
     setFormData({
-      id: data.id,
+      primary_category_id: data.primary_category_id,
       primary_category: data.primary_category_id,
-      sub_category_data: data.sub_category_data,
+      sub_category_data: [],
     });
+    setInitialSubCategories(data.sub_category_data);
     setIsEditing(true);
     onOpen();
   };
 
   const handleAdd = () => {
     setFormData({
-      id: "",
+      primary_category_id: "",
       interest_category: "",
       sub_category_data: [],
     });
+    setInitialSubCategories([]);
     setIsEditing(false);
     onOpen();
   };
@@ -237,7 +289,7 @@ export default function InterestsMasters() {
       formData.append("token", authToken);
 
       await axios.post(
-        "https://xplorionai-bryz7.ondigitalocean.app/app/masters/sub-category/update/status",
+        `${baseURL}/app/masters/sub-category/update/status`,
         formData,
         {
           headers: {
@@ -452,7 +504,9 @@ export default function InterestsMasters() {
                 }}
                 domLayout="autoHeight"
                 getRowHeight={(params) => {
-                  if (params.data.sub_category_data.length > 1) {
+                  // console.log({ params });
+
+                  if (params?.data.sub_category_data.length > 1) {
                     return params.data.sub_category_data.length * 45;
                   } else {
                     return 80;
@@ -501,16 +555,13 @@ export default function InterestsMasters() {
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          primary_category: e.target.value,
+                          primary_category_id: e.target.value,
                         })
                       }
                     >
                       <option value="">Select Interest Category</option>
                       {primary_categorys.map((category) => (
-                        <option
-                          key={category._id}
-                          value={category.primary_category}
-                        >
+                        <option key={category._id} value={category._id}>
                           {category.primary_category}
                         </option>
                       ))}
@@ -536,9 +587,9 @@ export default function InterestsMasters() {
                   <VStack mt={4} spacing={0} alignItems={"flex-start"}>
                     <FormLabel>Associated interests</FormLabel>
                     <Box display="flex" flexWrap="wrap">
-                      {formData.sub_category_data.map((interest, index) => (
+                      {initialSubCategories.map((subCategory) => (
                         <Tag
-                          key={index}
+                          key={subCategory.sub_category_id}
                           size="md"
                           borderRadius="4px"
                           variant="outline"
@@ -547,12 +598,31 @@ export default function InterestsMasters() {
                           p={2}
                           bgColor={"#EDF2FE"}
                         >
-                          <TagLabel>{interest.sub_category_name}</TagLabel>
-                          <TagCloseButton
-                            onClick={() => handleRemoveInterest(interest)}
-                          />
+                          <TagLabel>{subCategory.sub_category_name}</TagLabel>
                         </Tag>
                       ))}
+                      {formData.sub_category_data.map(
+                        (interest, index) => (
+                          console.log({ interest }),
+                          (
+                            <Tag
+                              key={index}
+                              size="md"
+                              borderRadius="4px"
+                              variant="outline"
+                              colorScheme="blue"
+                              m={1}
+                              p={2}
+                              bgColor={"#EDF2FE"}
+                            >
+                              <TagLabel>{interest}</TagLabel>
+                              <TagCloseButton
+                                onClick={() => handleRemoveInterest(interest)}
+                              />
+                            </Tag>
+                          )
+                        )
+                      )}
                     </Box>
                   </VStack>
                 </FormControl>
