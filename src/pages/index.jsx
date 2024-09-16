@@ -42,7 +42,9 @@ export default function Home() {
           `${process.env.NEXT_PUBLIC_BASE_URL}/app/super-users/auth/${token}`
         );
 
-        if (response.status === 200) {
+        console.log({ authResponce: response });
+
+        if (response.data.errFlag === 0) {
           setAuthToken(token);
         } else {
           router.push("/login");

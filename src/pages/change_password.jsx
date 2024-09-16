@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -16,11 +16,45 @@ import styles from "@/styles/login.module.css";
 import { BiShowAlt } from "react-icons/bi";
 import { BiHide } from "react-icons/bi";
 import axios from "axios";
+import { useRouter } from "next/router";
 
 export default function ChangePassword() {
   const baseURL = process.env.NEXT_PUBLIC_BASE_URL;
   const [loginFailed, setLoginFailed] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [authToken, setAuthToken] = useState(null);
+  const router = useRouter();
+  console.log({ authToken });
+
+  useEffect(() => {
+    const verifyAuthToken = async () => {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        router.push("/login");
+        return;
+      }
+
+      try {
+        const response = await axios.get(
+          `${baseURL}/app/super-users/auth/${token}`
+        );
+
+        console.log({ authResponce: response });
+
+        if (response.data.errFlag === 0) {
+          setAuthToken(token);
+        } else {
+          router.push("/login");
+        }
+      } catch (error) {
+        console.error("Authentication failed", error);
+        router.push("/login");
+      }
+    };
+
+    verifyAuthToken();
+  }, [router]);
 
   // State to handle form data
   const [formData, setFormData] = useState({
