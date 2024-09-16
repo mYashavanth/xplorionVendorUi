@@ -17,45 +17,16 @@ import "ag-grid-community/styles/ag-theme-alpine.css";
 import { useRouter } from "next/router";
 import { PiUsersThreeThin } from "react-icons/pi";
 import styles from "../styles/signed_up_users.module.css";
+import useAuth from "@/components/useAuth";
 
 export default function SignedUpUsers() {
   const router = useRouter();
   const [rowData, setRowData] = useState([]);
   const [gridApi, setGridApi] = useState(null);
-  const [authToken, setAuthToken] = useState(null);
   const [btnLoading, setBtnLoading] = useState({});
   const [loading, setLoading] = useState({ fetch: true });
   const baseURL = process.env.NEXT_PUBLIC_BASE_URL;
-
-  useEffect(() => {
-    const verifyAuthToken = async () => {
-      const token = localStorage.getItem("token");
-
-      if (!token) {
-        router.push("/login");
-        return;
-      }
-
-      try {
-        const response = await axios.get(
-          `${baseURL}/app/super-users/auth/${token}`
-        );
-
-        console.log({ authResponce: response });
-
-        if (response.data.errFlag === 0) {
-          setAuthToken(token);
-        } else {
-          router.push("/login");
-        }
-      } catch (error) {
-        console.error("Authentication failed", error);
-        router.push("/login");
-      }
-    };
-
-    verifyAuthToken();
-  }, [router]);
+  const authToken = useAuth(baseURL);
 
   useEffect(() => {
     if (authToken) {

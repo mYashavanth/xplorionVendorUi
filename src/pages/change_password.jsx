@@ -17,44 +17,46 @@ import { BiShowAlt } from "react-icons/bi";
 import { BiHide } from "react-icons/bi";
 import axios from "axios";
 import { useRouter } from "next/router";
+import useAuth from "@/components/useAuth";
 
 export default function ChangePassword() {
   const baseURL = process.env.NEXT_PUBLIC_BASE_URL;
   const [loginFailed, setLoginFailed] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [authToken, setAuthToken] = useState(null);
+  // const [authToken, setAuthToken] = useState(null);
+  const authToken = useAuth(baseURL);
   const router = useRouter();
   console.log({ authToken });
 
-  useEffect(() => {
-    const verifyAuthToken = async () => {
-      const token = localStorage.getItem("token");
+  // useEffect(() => {
+  //   const verifyAuthToken = async () => {
+  //     const token = localStorage.getItem("token");
 
-      if (!token) {
-        router.push("/login");
-        return;
-      }
+  //     if (!token) {
+  //       router.push("/login");
+  //       return;
+  //     }
 
-      try {
-        const response = await axios.get(
-          `${baseURL}/app/super-users/auth/${token}`
-        );
+  //     try {
+  //       const response = await axios.get(
+  //         `${baseURL}/app/super-users/auth/${token}`
+  //       );
 
-        console.log({ authResponce: response });
+  //       console.log({ authResponce: response });
 
-        if (response.data.errFlag === 0) {
-          setAuthToken(token);
-        } else {
-          router.push("/login");
-        }
-      } catch (error) {
-        console.error("Authentication failed", error);
-        router.push("/login");
-      }
-    };
+  //       if (response.data.errFlag === 0) {
+  //         setAuthToken(token);
+  //       } else {
+  //         router.push("/login");
+  //       }
+  //     } catch (error) {
+  //       console.error("Authentication failed", error);
+  //       router.push("/login");
+  //     }
+  //   };
 
-    verifyAuthToken();
-  }, [router]);
+  //   verifyAuthToken();
+  // }, [router]);
 
   // State to handle form data
   const [formData, setFormData] = useState({

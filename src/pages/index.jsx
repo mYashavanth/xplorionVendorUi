@@ -22,41 +22,13 @@ import styles from "../styles/home.module.css";
 import { PiNotepad } from "react-icons/pi";
 import { useRouter } from "next/router";
 import axios from "axios";
+import useAuth from "@/components/useAuth";
 
 export default function Home() {
   const gridApiRef = useRef(null);
   const router = useRouter();
-  const [authToken, setAuthToken] = useState(null);
-
-  useEffect(() => {
-    const verifyAuthToken = async () => {
-      const token = localStorage.getItem("token");
-
-      if (!token) {
-        router.push("/login");
-        return;
-      }
-
-      try {
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/app/super-users/auth/${token}`
-        );
-
-        console.log({ authResponce: response });
-
-        if (response.data.errFlag === 0) {
-          setAuthToken(token);
-        } else {
-          router.push("/login");
-        }
-      } catch (error) {
-        console.error("Authentication failed", error);
-        router.push("/login");
-      }
-    };
-
-    verifyAuthToken();
-  }, [router]);
+  const baseURL = process.env.NEXT_PUBLIC_BASE_URL;
+  const authToken = useAuth(baseURL);
 
   console.log({ authToken });
 

@@ -37,6 +37,7 @@ import { RxDashboard } from "react-icons/rx";
 import { BsFillPlusCircleFill } from "react-icons/bs";
 import { FiEdit, FiTrash2, FiEdit3 } from "react-icons/fi";
 import { useRouter } from "next/router";
+import useAuth from "@/components/useAuth";
 
 export default function InterestsMasters() {
   const router = useRouter();
@@ -53,7 +54,7 @@ export default function InterestsMasters() {
   const [loading, setLoading] = useState(true);
   const baseURL = process.env.NEXT_PUBLIC_BASE_URL;
   // console.log({ baseURL });
-  const [authToken, setAuthToken] = useState(null);
+  const authToken = useAuth(baseURL);
   console.log({ authToken, rowData });
   const [btnLoading, setBtnLoading] = useState({});
 
@@ -97,36 +98,6 @@ export default function InterestsMasters() {
       console.error("Error updating subcategory:", error);
     }
   };
-
-  useEffect(() => {
-    const verifyAuthToken = async () => {
-      const token = localStorage.getItem("token");
-
-      if (!token) {
-        router.push("/login");
-        return;
-      }
-
-      try {
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/app/super-users/auth/${token}`
-        );
-
-        console.log({ authResponce: response });
-
-        if (response.data.errFlag === 0) {
-          setAuthToken(token);
-        } else {
-          router.push("/login");
-        }
-      } catch (error) {
-        console.error("Authentication failed", error);
-        router.push("/login");
-      }
-    };
-
-    verifyAuthToken();
-  }, [router]);
 
   useEffect(() => {
     const fetchPrimaryCategories = async () => {
