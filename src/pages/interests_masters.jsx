@@ -424,7 +424,7 @@ export default function InterestsMasters() {
         },
       },
     ],
-    [btnLoading]
+    [btnLoading, authToken, fetchData, handleStatusChange, openEditModal]
   );
 
   return (
