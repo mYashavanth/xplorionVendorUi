@@ -49,7 +49,7 @@ export default function NavBar() {
     { name: "Dashboard", icon: AiOutlineHome, path: "/" },
     // { name: "Itineraries", icon: PiNotepad, path: "/login" },
     {
-      name: "Users",
+      name: "App Users",
       icon: PiUsersThreeThin,
       path: "/signed_up_users",
     },
