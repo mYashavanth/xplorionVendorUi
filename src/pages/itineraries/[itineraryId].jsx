@@ -154,18 +154,24 @@ export default function Itinerary() {
                 <Text>5 days</Text>
               </HStack>
               <HStack>
-                <Tag size={"lg"} bgColor={"#E5E5E5"}>
-                  Sightseeing
-                </Tag>
-                <Tag size={"lg"} bgColor={"#E5E5E5"}>
-                  Food and wine
-                </Tag>
-                <Tag size={"lg"} bgColor={"#E5E5E5"}>
-                  Nightlife
-                </Tag>
-                <Tag size={"lg"} bgColor={"#E5E5E5"}>
-                  Hiking
-                </Tag>
+                {["Sightseeing", "Food and wine", "Nightlife", "Hiking"].map(
+                  (tag) => (
+                    <Tag
+                      size={"lg"}
+                      border={"1px solid #0099FF"}
+                      sx={{
+                        backgroundClip: "text",
+                        WebkitBackgroundClip: "text",
+                        color: "transparent",
+                        backgroundImage:
+                          "linear-gradient(to right, #0099FF, #54AB6A)",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {tag}
+                    </Tag>
+                  )
+                )}
               </HStack>
             </HStack>
           </VStack>
@@ -252,7 +258,9 @@ export default function Itinerary() {
                           ? "#EDF2FE"
                           : "transparent",
                         _hover: {
-                          bg: "#E5E5E5",
+                          bg: isAnyListItemActive(numberOfDays)
+                            ? "#EDF2FE"
+                            : "#E5E5E5",
                         },
                       }}
                       fontWeight={
