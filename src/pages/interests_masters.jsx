@@ -214,7 +214,7 @@ export default function InterestsMasters() {
   const handleEdit = (data) => {
     setFormData({
       primary_category_id: data.primary_category_id,
-      primary_category: data.primary_category_id,
+      primary_category: data.primaryCategoryName,
       sub_category_data: [],
     });
     setInitialSubCategories(data.sub_category_data);
@@ -293,7 +293,7 @@ export default function InterestsMasters() {
       },
       {
         headerName: "Interest Category",
-        field: "primary_category_id",
+        field: "primaryCategoryName",
         flex: 3,
       },
       {
@@ -515,12 +515,13 @@ export default function InterestsMasters() {
                     <Input
                       placeholder="Interest Category"
                       value={formData.primary_category}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          primary_category: e.target.value,
-                        })
-                      }
+                      // onChange={(e) =>
+                      //   setFormData({
+                      //     ...formData,
+                      //     primary_category: e.target.value,
+                      //   })
+                      // }
+                      readonly
                     />
                   ) : (
                     <Select

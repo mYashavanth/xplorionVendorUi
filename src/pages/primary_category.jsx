@@ -142,28 +142,13 @@ export default function PrimaryCategory() {
       field: "created_date",
       filter: "agDateColumnFilter",
       filterParams: {
-        comparator: (filterLocalDateAtMidnight, cellValue) => {
-          const date = new Date(cellValue);
-          const filterDateStr = filterLocalDateAtMidnight
-            .toISOString()
-            .split("T")[0];
-          const cellDateStr = date.toISOString().split("T")[0];
-
-          console.log({
-            filterLocalDateAtMidnight,
-            cellValue,
-            date,
-            filterDateStr,
-            cellDateStr,
-          });
-
-          if (cellDateStr < filterDateStr) {
-            return -1;
-          } else if (cellDateStr > filterDateStr) {
-            return 1;
-          } else {
+        comparator: (filterDate, cellValue) => {
+          const [year, month, day] = cellValue.split(" ")[0].split("-");
+          const cellDate = new Date(year, month - 1, day);
+          if (filterDate.getTime() === cellDate.getTime()) {
             return 0;
           }
+          return filterDate.getTime() > cellDate.getTime() ? -1 : 1;
         },
       },
     },

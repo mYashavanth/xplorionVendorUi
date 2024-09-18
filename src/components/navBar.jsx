@@ -15,7 +15,10 @@ import { AiOutlineHome } from "react-icons/ai";
 import { PiNotepad } from "react-icons/pi";
 import { RxDashboard } from "react-icons/rx";
 import { IoLogOutOutline } from "react-icons/io5";
-import { PiUsersThreeThin } from "react-icons/pi";
+import { PiUsersThreeThin, PiCityLight } from "react-icons/pi";
+import { HiOutlineClipboardDocumentList } from "react-icons/hi2";
+
+
 
 export default function NavBar() {
   const router = useRouter();
@@ -62,6 +65,16 @@ export default function NavBar() {
       name: "Interests Masters",
       icon: RxDashboard,
       path: "/interests_masters",
+    },
+    {
+      name: "Itinerary List",
+      icon: HiOutlineClipboardDocumentList,
+      path: "/itinerary_list",
+    },
+    {
+      name: "Cities",
+      icon: PiCityLight,
+      path: "/city_details",
     },
     {
       name: "Logout",
