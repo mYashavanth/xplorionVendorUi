@@ -49,7 +49,7 @@ export default function SignedUpUsers() {
     if (authToken) {
       fetchUserData();
     }
-  }, [authToken]);
+  }, [authToken, fetchUserData]);
 
   const updateToken = async (userId, newStatus) => {
     if (!authToken) return;

@@ -65,10 +65,10 @@ export default function InterestsMasters() {
   });
   const [primary_categorys, setPrimaryCategories] = useState([]);
 
-  const openEditModal = (subCategoryId, subCategoryName) => {
+  const openEditModal = useCallback((subCategoryId, subCategoryName) => {
     setCurrentSubCategory({ subCategoryId, subCategoryName });
     setIsModalOpen(true);
-  };
+  }, []);
   const handleUpdateSubCategory = async () => {
     try {
       const token = authToken;
@@ -224,7 +224,7 @@ export default function InterestsMasters() {
     }
   };
 
-  const handleEdit = (data) => {
+  const handleEdit = useCallback((data) => {
     setFormData({
       primary_category_id: data.primary_category_id,
       primary_category: data.primaryCategoryName,
@@ -233,7 +233,7 @@ export default function InterestsMasters() {
     setInitialSubCategories(data.sub_category_data);
     setIsEditing(true);
     onOpen();
-  };
+  }, []);
 
   const handleAdd = () => {
     setFormData({
@@ -264,33 +264,36 @@ export default function InterestsMasters() {
       ),
     }));
   };
-  const handleStatusChange = async (subCategoryId, currentStatus) => {
-    try {
-      setBtnLoading((prev) => ({ ...prev, [subCategoryId]: true }));
-      const newStatus = currentStatus === 1 ? 0 : 1;
+  const handleStatusChange = useCallback(
+    async (subCategoryId, currentStatus) => {
+      try {
+        setBtnLoading((prev) => ({ ...prev, [subCategoryId]: true }));
+        const newStatus = currentStatus === 1 ? 0 : 1;
 
-      const formData = new FormData();
-      formData.append("status", newStatus);
-      formData.append("subCategoryId", subCategoryId);
-      formData.append("token", authToken);
+        const formData = new FormData();
+        formData.append("status", newStatus);
+        formData.append("subCategoryId", subCategoryId);
+        formData.append("token", authToken);
 
-      await axios.post(
-        `${baseURL}/app/masters/sub-category/update/status`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+        await axios.post(
+          `${baseURL}/app/masters/sub-category/update/status`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
 
-      fetchData();
-    } catch (error) {
-      console.error("Failed to update status:", error);
-    } finally {
-      setBtnLoading((prev) => ({ ...prev, [subCategoryId]: false }));
-    }
-  };
+        fetchData();
+      } catch (error) {
+        console.error("Failed to update status:", error);
+      } finally {
+        setBtnLoading((prev) => ({ ...prev, [subCategoryId]: false }));
+      }
+    },
+    [authToken, baseURL]
+  );
 
   const columnDefs = useMemo(
     () => [
