@@ -32,7 +32,7 @@ export default function SignedUpUsers() {
     if (authToken) {
       fetchUserData();
     }
-  }, [authToken, fetchUserData]);
+  }, [authToken]);
 
   const fetchUserData = async () => {
     if (!authToken) return;

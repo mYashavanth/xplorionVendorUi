@@ -115,7 +115,7 @@ export default function InterestsMasters() {
 
     fetchPrimaryCategories();
     fetchData();
-  }, [authToken, fetchData]);
+  }, [authToken,baseURL]);
   const fetchData = async () => {
     if (!authToken) return;
     try {
@@ -397,7 +397,7 @@ export default function InterestsMasters() {
         },
       },
     ],
-    [btnLoading, authToken, fetchData, handleStatusChange, openEditModal]
+    [btnLoading, authToken, fetchData, handleStatusChange, openEditModal, handleEdit]
   );
 
   return (

@@ -23,6 +23,7 @@ import { PiNotepad } from "react-icons/pi";
 import { useRouter } from "next/router";
 import axios from "axios";
 import useAuth from "@/components/useAuth";
+import Image from "next/image";
 
 export default function Home() {
   const gridApiRef = useRef(null);
@@ -62,7 +63,7 @@ export default function Home() {
           action: "View Details",
         };
       });
-  }, [authToken]);
+  }, []);
 
   // Function to get a random date within the year 2024
   const getRandomDate = (minDate) => {
@@ -159,7 +160,7 @@ export default function Home() {
         ),
       },
     ],
-    [handleAction]
+    []
   );
 
   const handleAction = useCallback(
@@ -258,7 +259,7 @@ export default function Home() {
                 h={"64px"}
                 bgColor={item.color}
               >
-                <img src={item.path} alt="logo" />
+                <Image src={item.path} alt="logo" width={30} height={30} />
               </Center>
             </HStack>
           ))}

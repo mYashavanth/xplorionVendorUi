@@ -155,8 +155,9 @@ export default function Itinerary() {
               </HStack>
               <HStack>
                 {["Sightseeing", "Food and wine", "Nightlife", "Hiking"].map(
-                  (tag) => (
+                  (tag, index) => (
                     <Tag
+                      key={index}
                       size={"lg"}
                       border={"1px solid #0099FF"}
                       sx={{

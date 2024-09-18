@@ -138,14 +138,21 @@ export default function ItineraryList() {
         ),
       },
     ],
-    [handleViewInterests]
+    []
   );
 
   // Function to handle the "View Interests" button click
-  const handleViewInterests = (interests) => {
-    setInterests(interests);
-    onOpen(); // Open the modal
-  };
+  // const handleViewInterests = (interests) => {
+  //   setInterests(interests);
+  //   onOpen(); // Open the modal
+  // };
+  const handleViewInterests = useCallback(
+    (interests) => {
+      setInterests(interests);
+      onOpen(); // Open the modal
+    },
+    [onOpen]
+  );
 
   return (
     <>
