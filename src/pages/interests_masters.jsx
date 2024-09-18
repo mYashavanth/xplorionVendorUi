@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
@@ -98,6 +98,19 @@ export default function InterestsMasters() {
       console.error("Error updating subcategory:", error);
     }
   };
+  const fetchData = useCallback(async () => {
+    if (!authToken) return;
+    try {
+      const response = await axios.get(
+        `${baseURL}/app/masters/sub-category/all/${authToken}`
+      );
+      setRowData(response.data);
+    } catch (error) {
+      console.error("There was an error fetching the data!", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [authToken, baseURL]);
 
   useEffect(() => {
     const fetchPrimaryCategories = async () => {
@@ -115,22 +128,22 @@ export default function InterestsMasters() {
 
     fetchPrimaryCategories();
     fetchData();
-  }, [authToken,baseURL]);
-  const fetchData = async () => {
-    if (!authToken) return;
-    try {
-      const response = await axios.get(
-        `${baseURL}/app/masters/sub-category/all/${authToken}`
-      );
+  }, [authToken, baseURL, fetchData]);
+  // const fetchData = async () => {
+  //   if (!authToken) return;
+  //   try {
+  //     const response = await axios.get(
+  //       `${baseURL}/app/masters/sub-category/all/${authToken}`
+  //     );
 
-      // console.log({ response });
-      setRowData(response.data);
-    } catch (error) {
-      console.error("There was an error fetching the data!", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  //     // console.log({ response });
+  //     setRowData(response.data);
+  //   } catch (error) {
+  //     console.error("There was an error fetching the data!", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -397,7 +410,7 @@ export default function InterestsMasters() {
         },
       },
     ],
-    [btnLoading, authToken, fetchData, handleStatusChange, openEditModal, handleEdit]
+    [btnLoading, handleStatusChange, openEditModal, handleEdit]
   );
 
   return (
@@ -521,7 +534,7 @@ export default function InterestsMasters() {
                       //     primary_category: e.target.value,
                       //   })
                       // }
-                      readonly
+                      readOnly
                     />
                   ) : (
                     <Select

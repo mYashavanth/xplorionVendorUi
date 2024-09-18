@@ -60,6 +60,13 @@ export default function ItineraryList() {
     },
   ];
 
+  const handleViewInterests = useCallback(
+    (interests) => {
+      setInterests(interests);
+      onOpen(); // Open the modal
+    },
+    [onOpen]
+  );
   // Columns definition for ag-Grid
   const columnDefs = useMemo(
     () => [
@@ -138,7 +145,7 @@ export default function ItineraryList() {
         ),
       },
     ],
-    []
+    [handleViewInterests]
   );
 
   // Function to handle the "View Interests" button click
@@ -146,13 +153,6 @@ export default function ItineraryList() {
   //   setInterests(interests);
   //   onOpen(); // Open the modal
   // };
-  const handleViewInterests = useCallback(
-    (interests) => {
-      setInterests(interests);
-      onOpen(); // Open the modal
-    },
-    [onOpen]
-  );
 
   return (
     <>

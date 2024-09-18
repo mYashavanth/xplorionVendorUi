@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Box,
   Button,
@@ -42,11 +42,7 @@ export default function PrimaryCategory() {
   const [btnLoading, setBtnLoading] = useState({});
   const [loading, setLoading] = useState({ fetch: true });
 
-  useEffect(() => {
-    fetchPrimaryCategories();
-  }, [authToken]);
-
-  const fetchPrimaryCategories = async () => {
+  const fetchPrimaryCategories = useCallback(async () => {
     if (!authToken) return;
 
     try {
@@ -61,7 +57,11 @@ export default function PrimaryCategory() {
     } finally {
       setLoading((prevLoading) => ({ ...prevLoading, fetch: false }));
     }
-  };
+  }, [authToken, baseURL]);
+
+  useEffect(() => {
+    fetchPrimaryCategories();
+  }, [authToken]);
 
   const handleAddCategory = async () => {
     try {

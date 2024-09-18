@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Head from "next/head";
 import {
   Box,
@@ -28,13 +28,7 @@ export default function SignedUpUsers() {
   const baseURL = process.env.NEXT_PUBLIC_BASE_URL;
   const authToken = useAuth(baseURL);
 
-  useEffect(() => {
-    if (authToken) {
-      fetchUserData();
-    }
-  }, [authToken]);
-
-  const fetchUserData = async () => {
+  const fetchUserData = useCallback(async () => {
     if (!authToken) return;
 
     try {
@@ -49,7 +43,13 @@ export default function SignedUpUsers() {
     } finally {
       setLoading((prevLoading) => ({ ...prevLoading, fetch: false }));
     }
-  };
+  }, [authToken, baseURL]);
+
+  useEffect(() => {
+    if (authToken) {
+      fetchUserData();
+    }
+  }, [authToken]);
 
   const updateToken = async (userId, newStatus) => {
     if (!authToken) return;
