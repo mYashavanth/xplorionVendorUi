@@ -44,7 +44,7 @@ export default function PrimaryCategory() {
 
   useEffect(() => {
     fetchPrimaryCategories();
-  }, [authToken]);
+  }, [authToken, fetchPrimaryCategories]);
 
   const fetchPrimaryCategories = async () => {
     if (!authToken) return;
