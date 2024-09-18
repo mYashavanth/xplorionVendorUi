@@ -80,7 +80,7 @@ export default function Itinerary() {
     return () => {
       window.removeEventListener("resize", updateHeights);
     };
-  }, []);
+  }, [combinedHeight]);
 
   // Scroll into view with offset and smooth behavior
   const handleScrollToSection = (sectionId) => {

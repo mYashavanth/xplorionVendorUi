@@ -62,7 +62,7 @@ export default function Home() {
           action: "View Details",
         };
       });
-  }, []);
+  }, [authToken]);
 
   // Function to get a random date within the year 2024
   const getRandomDate = (minDate) => {
@@ -159,16 +159,19 @@ export default function Home() {
         ),
       },
     ],
-    []
+    [handleAction]
   );
 
-  const handleAction = useCallback((params) => {
-    console.log("Redirect to details page for:", params.data.itineraryId);
-    // Add routing logic here
-    // nvigate to the page inineraries which have a dynamic routing for itineraryId
+  const handleAction = useCallback(
+    (params) => {
+      console.log("Redirect to details page for:", params.data.itineraryId);
+      // Add routing logic here
+      // nvigate to the page inineraries which have a dynamic routing for itineraryId
 
-    router.push(`/itineraries/${params.data.itineraryId}`);
-  }, []);
+      router.push(`/itineraries/${params.data.itineraryId}`);
+    },
+    [router]
+  );
 
   const gridOptions = useMemo(
     () => ({

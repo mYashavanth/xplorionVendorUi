@@ -138,7 +138,7 @@ export default function ItineraryList() {
         ),
       },
     ],
-    []
+    [handleViewInterests, rowData]
   );
 
   // Function to handle the "View Interests" button click

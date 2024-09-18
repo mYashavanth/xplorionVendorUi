@@ -115,7 +115,7 @@ export default function InterestsMasters() {
 
     fetchPrimaryCategories();
     fetchData();
-  }, [authToken]);
+  }, [authToken, fetchData]);
   const fetchData = async () => {
     if (!authToken) return;
     try {

@@ -46,13 +46,18 @@ export default function CityList() {
   ]);
 
   // Function to toggle the status
-  const toggleStatus = useCallback((rowIndex) => {
-    setRowData((prevData) =>
-      prevData.map((row, index) =>
-        index === rowIndex ? { ...row, status: row.status === 1 ? 0 : 1 } : row
-      )
-    );
-  }, []);
+  const toggleStatus = useCallback(
+    (rowIndex) => {
+      setRowData((prevData) =>
+        prevData.map((row, index) =>
+          index === rowIndex
+            ? { ...row, status: row.status === 1 ? 0 : 1 }
+            : row
+        )
+      );
+    },
+    [setRowData]
+  );
 
   // Column Definitions
   const columnDefs = useMemo(
