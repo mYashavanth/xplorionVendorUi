@@ -7,7 +7,7 @@ const useAuth = (baseURL) => {
   const router = useRouter();
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    // if (typeof window === "undefined") return;
     const verifyAuthToken = async () => {
       const token = localStorage.getItem("token");
 
