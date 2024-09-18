@@ -224,16 +224,19 @@ export default function InterestsMasters() {
     }
   };
 
-  const handleEdit = useCallback((data) => {
-    setFormData({
-      primary_category_id: data.primary_category_id,
-      primary_category: data.primaryCategoryName,
-      sub_category_data: [],
-    });
-    setInitialSubCategories(data.sub_category_data);
-    setIsEditing(true);
-    onOpen();
-  }, []);
+  const handleEdit = useCallback(
+    (data) => {
+      setFormData({
+        primary_category_id: data.primary_category_id,
+        primary_category: data.primaryCategoryName,
+        sub_category_data: [],
+      });
+      setInitialSubCategories(data.sub_category_data);
+      setIsEditing(true);
+      onOpen();
+    },
+    [onOpen]
+  );
 
   const handleAdd = () => {
     setFormData({
@@ -292,7 +295,7 @@ export default function InterestsMasters() {
         setBtnLoading((prev) => ({ ...prev, [subCategoryId]: false }));
       }
     },
-    [authToken, baseURL]
+    [authToken, baseURL, fetchData]
   );
 
   const columnDefs = useMemo(
