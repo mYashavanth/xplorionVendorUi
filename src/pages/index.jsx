@@ -84,16 +84,16 @@ export default function Home() {
   };
 
   const [rowData] = useState(generateRandomData);
-   const handleAction = useCallback(
-     (params) => {
-       console.log("Redirect to details page for:", params.data.itineraryId);
-       // Add routing logic here
-       // nvigate to the page inineraries which have a dynamic routing for itineraryId
+  const handleAction = useCallback(
+    (params) => {
+      console.log("Redirect to details page for:", params.data.itineraryId);
+      // Add routing logic here
+      // nvigate to the page inineraries which have a dynamic routing for itineraryId
 
-       router.push(`/itineraries/${params.data.itineraryId}`);
-     },
-     [router]
-   );
+      router.push(`/itineraries/${params.data.itineraryId}`);
+    },
+    [router]
+  );
 
   // Column definitions with floating filters and date filtering
   const columnDefs = useMemo(
@@ -170,10 +170,8 @@ export default function Home() {
         ),
       },
     ],
-    [ handleAction ]
+    [handleAction]
   );
-
- 
 
   const gridOptions = useMemo(
     () => ({
@@ -260,7 +258,16 @@ export default function Home() {
                 h={"64px"}
                 bgColor={item.color}
               >
-                <Image src={item.path} alt="logo" width={30} height={30} />
+                <Image
+                  src={item.path}
+                  alt="logo"
+                  width={30}
+                  height={30}
+                  style={{
+                    width: "auto",
+                    height: "auto",
+                  }}
+                />
               </Center>
             </HStack>
           ))}

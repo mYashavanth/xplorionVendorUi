@@ -150,6 +150,8 @@ export default function SignedUpUsers() {
       {
         headerName: "Action",
         field: "_id",
+        filter: false,
+        sortable: false,
         cellRenderer: (params) => (
           <Button
             border={"1px solid #0099FF"}
@@ -161,7 +163,7 @@ export default function SignedUpUsers() {
             }}
             onClick={() => handleFetchSubCategories(params.value)}
           >
-            View Sub-Categories
+            View Interest
           </Button>
         ),
       },
