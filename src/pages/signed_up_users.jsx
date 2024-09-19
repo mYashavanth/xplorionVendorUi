@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Head from "next/head";
 import {
   Box,
@@ -9,6 +9,15 @@ import {
   SkeletonText,
   Heading,
   filter,
+  useDisclosure,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
+  ModalFooter,
+  Text,
 } from "@chakra-ui/react";
 import axios from "axios";
 import { AgGridReact } from "ag-grid-react";
@@ -27,6 +36,52 @@ export default function SignedUpUsers() {
   const [loading, setLoading] = useState({ fetch: true });
   const baseURL = process.env.NEXT_PUBLIC_BASE_URL;
   const authToken = useAuth(baseURL);
+  const [subCategories, setSubCategories] = useState([]); // Holds the sub-category names for the modal
+  const [fetchedDataCache, setFetchedDataCache] = useState({}); // Cache for storing fetched data per app_user_id
+  const { isOpen, onOpen, onClose } = useDisclosure(); // Controls modal visibility
+  const [subCatLoading, setSubCatLoading] = useState(false); // Loading state for API call
+
+  const handleFetchSubCategories = useCallback(
+    async (app_user_id, token) => {
+      if (fetchedDataCache[app_user_id]) {
+        // If data is already in the cache, use it
+        setSubCategories(fetchedDataCache[app_user_id]);
+        onOpen();
+      } else {
+        // If data is not in cache, fetch from API
+        setSubCatLoading(true);
+        console.log({ app_user_id, authToken });
+
+        try {
+          const response = await axios.get(
+            `https://xplorionai-bryz7.ondigitalocean.app/app/super-admin/interests/${token}/${app_user_id}`
+          );
+
+          // Extracting sub-category names from the response
+          // const fetchedSubCategories = response.data.map(
+          //   (item) => item.interest_details[0].sub_category_name
+          // );
+
+          // Updating the cache with the fetched data
+          setFetchedDataCache((prevCache) => ({
+            ...prevCache,
+            [app_user_id]: response.data,
+          }));
+
+          setSubCategories(response.data);
+          console.log({ responseData: response.data });
+          // if(response.data.){
+
+          onOpen(); // Open the modal once data is fetched
+        } catch (error) {
+          console.error("Error fetching sub-categories:", error);
+        } finally {
+          setSubCatLoading(false);
+        }
+      }
+    },
+    [fetchedDataCache, onOpen]
+  );
 
   const fetchUserData = useCallback(async () => {
     if (!authToken) return;
@@ -51,63 +106,93 @@ export default function SignedUpUsers() {
     }
   }, [authToken, fetchUserData]);
 
-  const updateToken = async (userId, newStatus) => {
-    if (!authToken) return;
+  const updateToken = useCallback(
+    async (userId, newStatus) => {
+      if (!authToken) return;
 
-    try {
-      setBtnLoading((prev) => ({ ...prev, [userId]: true }));
-      await axios.post(
-        `${baseURL}/app/super-admin/app-users/all/token-update/${userId}`,
-        {
-          status: newStatus,
-          token: authToken,
-        }
-      );
-      fetchUserData(); // Refresh the data
-    } catch (error) {
-      console.error("Error updating status:", error.message);
-    } finally {
-      setBtnLoading((prev) => ({ ...prev, [userId]: false }));
-    }
-  };
-
-  const columnDefs = [
-    {
-      headerName: "Sl. No.",
-      valueGetter: (params) => params.node.rowIndex + 1,
-      width: 150,
-      flex: false,
-      filter: false,
-      sortable: false,
-      suppressHeaderMenuButton: true,
-    },
-    {
-      field: "app_user_name",
-      headerName: "App User Name",
-      valueGetter: (params) => params.data.app_user_name || "-",
-    },
-    { field: "username", headerName: "Username" },
-    { field: "email", headerName: "Email" },
-    { field: "created_date", headerName: "Created Date" },
-    {
-      field: "status",
-      headerName: "Status",
-      filter: false,
-      cellRenderer: (params) => {
-        const isActive = params.value === 1;
-        return (
-          <Button
-            onClick={() => updateToken(params.data._id, isActive ? 0 : 1)}
-            isLoading={btnLoading[params.data._id]}
-            colorScheme={isActive ? "green" : "red"}
-            variant="solid"
-          >
-            {isActive ? "Active" : "Inactive"}
-          </Button>
+      try {
+        setBtnLoading((prev) => ({ ...prev, [userId]: true }));
+        await axios.post(
+          `${baseURL}/app/super-admin/app-users/all/token-update/${userId}`,
+          {
+            status: newStatus,
+            token: authToken,
+          }
         );
-      },
+        fetchUserData(); // Refresh the data
+      } catch (error) {
+        console.error("Error updating status:", error.message);
+      } finally {
+        setBtnLoading((prev) => ({ ...prev, [userId]: false }));
+      }
     },
-  ];
+    [authToken, baseURL, fetchUserData]
+  );
+
+  const columnDefs = useMemo(
+    () => [
+      {
+        headerName: "Sl. No.",
+        valueGetter: (params) => params.node.rowIndex + 1,
+        width: 150,
+        flex: false,
+        filter: false,
+        sortable: false,
+        suppressHeaderMenuButton: true,
+      },
+      {
+        field: "app_user_name",
+        headerName: "App User Name",
+        valueGetter: (params) => params.data.app_user_name || "-",
+      },
+      { field: "username", headerName: "Username" },
+      { field: "email", headerName: "Email" },
+      { field: "created_date", headerName: "Created Date" },
+      {
+        headerName: "Action",
+        field: "_id",
+        cellRenderer: (params) => (
+          <Button
+            border={"1px solid #0099FF"}
+            color="#0099FF"
+            bg={"white"}
+            size="sm"
+            _hover={{
+              boxShadow: "xl",
+            }}
+            onClick={() => handleFetchSubCategories(params.value, authToken)}
+          >
+            View Sub-Categories
+          </Button>
+        ),
+      },
+      {
+        field: "status",
+        headerName: "Status",
+        filter: false,
+        cellRenderer: (params) => {
+          const isActive = params.value === 1;
+          return (
+            <Button
+              onClick={() => updateToken(params.data._id, isActive ? 0 : 1)}
+              isLoading={btnLoading[params.data._id]}
+              colorScheme={isActive ? "green" : "red"}
+              variant="solid"
+            >
+              {isActive ? "Active" : "Inactive"}
+            </Button>
+          );
+        },
+      },
+    ],
+    [
+      authToken,
+      btnLoading,
+      fetchUserData,
+      handleFetchSubCategories,
+      updateToken,
+    ]
+  );
 
   return (
     <>
@@ -177,6 +262,29 @@ export default function SignedUpUsers() {
             />
           </Box>
         )}
+        <Modal isOpen={isOpen} onClose={onClose}>
+          <ModalOverlay />
+          <ModalContent>
+            <ModalHeader>Sub-Categories</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>
+              {subCatLoading ? (
+                <Text>Loading...</Text>
+              ) : (
+                subCategories.map((subCategory, index) => (
+                  <Text key={index}>
+                    {subCategory.interest_details[0].sub_category_name}
+                  </Text>
+                ))
+              )}
+            </ModalBody>
+            <ModalFooter>
+              <Button colorScheme="blue" mr={3} onClick={onClose}>
+                Close
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
       </main>
     </>
   );
