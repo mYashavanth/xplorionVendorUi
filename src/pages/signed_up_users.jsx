@@ -184,7 +184,7 @@ export default function SignedUpUsers() {
         },
       },
     ],
-    [authToken, btnLoading, handleFetchSubCategories, updateToken]
+    [btnLoading, handleFetchSubCategories, updateToken]
   );
 
   return (
