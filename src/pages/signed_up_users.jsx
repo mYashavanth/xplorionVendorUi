@@ -42,7 +42,7 @@ export default function SignedUpUsers() {
   const [subCatLoading, setSubCatLoading] = useState(false); // Loading state for API call
 
   const handleFetchSubCategories = useCallback(
-    async (app_user_id, token) => {
+    async (app_user_id) => {
       if (fetchedDataCache[app_user_id]) {
         // If data is already in the cache, use it
         setSubCategories(fetchedDataCache[app_user_id]);
@@ -50,11 +50,10 @@ export default function SignedUpUsers() {
       } else {
         // If data is not in cache, fetch from API
         setSubCatLoading(true);
-        console.log({ app_user_id, authToken });
 
         try {
           const response = await axios.get(
-            `https://xplorionai-bryz7.ondigitalocean.app/app/super-admin/interests/${token}/${app_user_id}`
+            `https://xplorionai-bryz7.ondigitalocean.app/app/super-admin/interests/${authToken}/${app_user_id}`
           );
 
           // Extracting sub-category names from the response
@@ -80,7 +79,7 @@ export default function SignedUpUsers() {
         }
       }
     },
-    [fetchedDataCache, onOpen]
+    [fetchedDataCache, onOpen, authToken]
   );
 
   const fetchUserData = useCallback(async () => {
@@ -160,7 +159,7 @@ export default function SignedUpUsers() {
             _hover={{
               boxShadow: "xl",
             }}
-            onClick={() => handleFetchSubCategories(params.value, authToken)}
+            onClick={() => handleFetchSubCategories(params.value)}
           >
             View Sub-Categories
           </Button>
@@ -185,13 +184,7 @@ export default function SignedUpUsers() {
         },
       },
     ],
-    [
-      authToken,
-      btnLoading,
-      fetchUserData,
-      handleFetchSubCategories,
-      updateToken,
-    ]
+    [authToken, btnLoading, handleFetchSubCategories, updateToken]
   );
 
   return (
