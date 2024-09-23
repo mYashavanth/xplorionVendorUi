@@ -17,6 +17,8 @@ import { RxDashboard } from "react-icons/rx";
 import { IoLogOutOutline } from "react-icons/io5";
 import { PiUsersThreeThin, PiCityLight } from "react-icons/pi";
 import { HiOutlineClipboardDocumentList } from "react-icons/hi2";
+import { TbPigMoney } from "react-icons/tb";
+import { MdCardTravel } from "react-icons/md";
 
 
 
@@ -75,6 +77,16 @@ export default function NavBar() {
       name: "Cities",
       icon: PiCityLight,
       path: "/city_details",
+    },
+    {
+      name: "Budget Tiers",
+      icon: TbPigMoney,
+      path: "/budget_tier",
+    },
+    {
+      name: "Travel Companion",
+      icon: MdCardTravel,
+      path: "/travel_companion",
     },
     {
       name: "Logout",
