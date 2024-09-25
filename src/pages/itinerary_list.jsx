@@ -13,7 +13,7 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import "ag-grid-community/styles/ag-grid.css";
-import "ag-grid-community/styles/ag-theme-alpine.css";
+import "ag-grid-community/styles/ag-theme-quartz.css";
 import styles from "../styles/itinerary_list.module.css";
 import Head from "next/head";
 
@@ -163,7 +163,7 @@ export default function ItineraryList() {
         <Box>
           {/* Ag-Grid Section */}
           <Box
-            className="ag-theme-alpine"
+            className="ag-theme-quartz"
             style={{ height: 400, width: "100%" }}
           >
             <AgGridReact

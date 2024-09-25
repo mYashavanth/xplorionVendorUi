@@ -15,7 +15,8 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import "ag-grid-community/styles/ag-grid.css";
-import "ag-grid-community/styles/ag-theme-alpine.css";
+// import "ag-grid-community/styles/ag-theme-alpine.css";
+import "ag-grid-community/styles/ag-theme-quartz.css";
 import axios from "axios";
 import Head from "next/head";
 import useAuth from "@/components/useAuth";
@@ -203,35 +204,34 @@ export default function CityList() {
           >
             Add City
           </Button>
-
-          {/* Loading state */}
-          {loading ? (
-            <p>Loading data...</p>
-          ) : (
-            <Box className="ag-theme-alpine" w={"100%"} h={"auto"}>
-              <AgGridReact
-                rowData={rowData}
-                columnDefs={columnDefs}
-                pagination={true}
-                paginationPageSize={5}
-                enableCellTextSelection={true}
-                defaultColDef={{
-                  sortable: true,
-                  filter: true,
-                  floatingFilter: true,
-                  resizable: true,
-                  flex: 1,
-                  filterParams: {
-                    debounceMs: 0,
-                    buttons: ["reset"],
-                  },
-                }}
-                domLayout="autoHeight"
-                getRowHeight={() => 60}
-              />
-            </Box>
-          )}
         </Box>
+        {/* Loading state */}
+        {loading ? (
+          <p>Loading data...</p>
+        ) : (
+          <Box className="ag-theme-quartz" w={"100%"} h={"auto"}>
+            <AgGridReact
+              rowData={rowData}
+              columnDefs={columnDefs}
+              pagination={true}
+              paginationPageSize={5}
+              enableCellTextSelection={true}
+              defaultColDef={{
+                sortable: true,
+                filter: true,
+                floatingFilter: true,
+                resizable: true,
+                flex: 1,
+                filterParams: {
+                  debounceMs: 0,
+                  buttons: ["reset"],
+                },
+              }}
+              domLayout="autoHeight"
+              getRowHeight={() => 60}
+            />
+          </Box>
+        )}
 
         {/* Modal for adding or editing a city */}
         <Modal isOpen={isOpen} onClose={resetForm}>

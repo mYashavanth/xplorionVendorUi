@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
-import "ag-grid-community/styles/ag-theme-alpine.css";
+import "ag-grid-community/styles/ag-theme-quartz.css";
 import axios from "axios";
 import {
   Box,
@@ -477,7 +477,7 @@ export default function InterestsMasters() {
                 </Button>
               </HStack>
               <AgGridReact
-                className="ag-theme-alpine"
+                className="ag-theme-quartz"
                 rowData={rowData}
                 columnDefs={columnDefs}
                 pagination={true}

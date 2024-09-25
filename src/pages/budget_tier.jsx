@@ -15,7 +15,7 @@ import {
   ModalFooter,
 } from "@chakra-ui/react";
 import "ag-grid-community/styles/ag-grid.css";
-import "ag-grid-community/styles/ag-theme-alpine.css";
+import "ag-grid-community/styles/ag-theme-quartz.css";
 import Head from "next/head";
 import styles from "../styles/budget_tier.module.css";
 import axios from "axios";
@@ -204,7 +204,7 @@ export default function BudgetTier() {
           </Button>
         </Box>
 
-        <Box className="ag-theme-alpine" style={{ height: 400, width: "100%" }}>
+        <Box className="ag-theme-quartz" style={{ height: 400, width: "100%" }}>
           <AgGridReact
             rowData={rowData}
             columnDefs={columnDefs}

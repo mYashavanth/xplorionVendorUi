@@ -17,7 +17,7 @@ import React, {
 } from "react";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
-import "ag-grid-community/styles/ag-theme-alpine.css";
+import "ag-grid-community/styles/ag-theme-quartz.css";
 import styles from "../styles/home.module.css";
 import { PiNotepad } from "react-icons/pi";
 import { useRouter } from "next/router";
@@ -289,7 +289,7 @@ export default function Home() {
             </Heading>
           </HStack>
           <AgGridReact
-            className="ag-theme-alpine"
+            className="ag-theme-quartz"
             gridOptions={gridOptions}
             onGridReady={(params) => {
               gridApiRef.current = params.api;

@@ -22,7 +22,7 @@ import {
 import axios from "axios";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
-import "ag-grid-community/styles/ag-theme-alpine.css";
+import "ag-grid-community/styles/ag-theme-quartz.css";
 import { useRouter } from "next/router";
 import { PiUsersThreeThin } from "react-icons/pi";
 import styles from "../styles/signed_up_users.module.css";
@@ -233,7 +233,7 @@ export default function SignedUpUsers() {
               <Spacer />
             </HStack>
             <AgGridReact
-              className="ag-theme-alpine"
+              className="ag-theme-quartz"
               rowData={Array.isArray(rowData) ? rowData : []}
               columnDefs={columnDefs}
               pagination={true}
