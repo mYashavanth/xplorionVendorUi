@@ -210,6 +210,7 @@ export default function BudgetTier() {
             columnDefs={columnDefs}
             pagination={true}
             paginationPageSize={5}
+            paginationPageSizeSelector={[5, 10, 15]}
             enableCellTextSelection={true}
             defaultColDef={{
               sortable: true,
