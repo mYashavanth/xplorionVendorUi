@@ -296,6 +296,7 @@ export default function Home() {
               params.api.sizeColumnsToFit();
             }}
             domLayout="autoHeight"
+            getRowHeight={() => 80}
           />
         </Box>
       </main>

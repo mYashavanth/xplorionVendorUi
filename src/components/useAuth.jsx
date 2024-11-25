@@ -34,7 +34,7 @@ const useAuth = (baseURL) => {
 
     verifyAuthToken();
   }, [baseURL, router]);
-  console.log("useAuth is working", authToken);
+  // console.log("useAuth is working", authToken);
 
   return authToken;
 };

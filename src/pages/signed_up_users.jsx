@@ -131,7 +131,7 @@ export default function SignedUpUsers() {
   const columnDefs = useMemo(
     () => [
       {
-        headerName: "Sl. No.",
+        headerName: "SL",
         valueGetter: (params) => params.node.rowIndex + 1,
         width: 150,
         flex: false,
@@ -141,14 +141,14 @@ export default function SignedUpUsers() {
       },
       {
         field: "app_user_name",
-        headerName: "App User Name",
+        headerName: "APP USER NAME",
         valueGetter: (params) => params.data.app_user_name || "-",
       },
-      { field: "username", headerName: "Username" },
-      { field: "email", headerName: "Email" },
-      { field: "created_date", headerName: "Created Date" },
+      { field: "username", headerName: "USERNAME" },
+      { field: "email", headerName: "EMAIL" },
+      { field: "created_date", headerName: "CREATED DATE" },
       {
-        headerName: "Action",
+        headerName: "ACTION",
         field: "_id",
         filter: false,
         sortable: false,
@@ -168,8 +168,8 @@ export default function SignedUpUsers() {
         ),
       },
       {
+        headerName: "STATUS",
         field: "status",
-        headerName: "Status",
         filter: false,
         cellRenderer: (params) => {
           const isActive = params.value === 1;
@@ -253,7 +253,7 @@ export default function SignedUpUsers() {
               }}
               onGridReady={(params) => setGridApi(params.api)}
               domLayout="autoHeight"
-              getRowHeight={() => 60}
+              getRowHeight={() => 80}
             />
           </Box>
         )}

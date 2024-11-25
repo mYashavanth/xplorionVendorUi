@@ -71,7 +71,7 @@ export default function ItineraryList() {
   const columnDefs = useMemo(
     () => [
       {
-        headerName: "S.No",
+        headerName: "SL",
         valueGetter: "node.rowIndex + 1",
         cellClass: "serial-number-cell",
         width: 150,
@@ -80,10 +80,10 @@ export default function ItineraryList() {
         sortable: false,
         suppressHeaderMenuButton: true,
       },
-      { headerName: "Itenary Id", field: "itenaryId" },
-      { headerName: "Username & Email", field: "username" },
+      { headerName: "ITENARY ID", field: "itenaryId" },
+      { headerName: "USERNAME & EMAIL", field: "username" },
       {
-        headerName: "Created Date & Time",
+        headerName: "CREATED DATE & TIME",
         field: "createdDate",
         filter: "agDateColumnFilter",
         filterParams: {
@@ -103,9 +103,9 @@ export default function ItineraryList() {
           return date.toISOString().split("T")[0];
         },
       },
-      { headerName: "City", field: "city" },
+      { headerName: "CITY", field: "city" },
       {
-        headerName: "Interests",
+        headerName: "INTERESTS",
         field: "interests",
         filter: false,
         sortable: false,
@@ -186,7 +186,7 @@ export default function ItineraryList() {
               }}
               domLayout="autoHeight"
               getRowHeight={(params) => {
-                return 60;
+                return 80;
               }}
             />
           </Box>

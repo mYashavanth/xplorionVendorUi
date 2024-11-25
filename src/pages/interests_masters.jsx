@@ -301,7 +301,7 @@ export default function InterestsMasters() {
   const columnDefs = useMemo(
     () => [
       {
-        headerName: "S.No",
+        headerName: "SL",
         valueGetter: "node.rowIndex + 1",
         cellClass: "serial-number-cell",
         width: 150,
@@ -311,12 +311,12 @@ export default function InterestsMasters() {
         suppressHeaderMenuButton: true,
       },
       {
-        headerName: "Interest Category",
+        headerName: "INTEREST CATEGORY",
         field: "primaryCategoryName",
         flex: 3,
       },
       {
-        headerName: "Category Based Interests",
+        headerName: "CATEGORY BASED INTERESTS",
         field: "sub_category_data",
         valueFormatter: (params) => {
           const subCategories = params.value.map(
@@ -392,7 +392,7 @@ export default function InterestsMasters() {
         flex: 3,
       },
       {
-        headerName: "Action",
+        headerName: "ACTION",
         field: "action",
         filter: false,
         flex: 2,
@@ -401,15 +401,15 @@ export default function InterestsMasters() {
             <HStack spacing={2} mt={3}>
               <Button
                 borderRadius={"full"}
-                size="sm"
+                size="xs"
                 onClick={() => handleEdit(params.data)}
-                w={"48px"}
-                h={"48px"}
+                w={"36px"}
+                h={"36px"}
                 bgColor={"transparent"}
                 _hover={{ bgColor: "#f5f6f7" }}
                 border={"1px solid #626C70"}
               >
-                <FiEdit color={"#626C70"} size={"24px"} />
+                <FiEdit color={"#626C70"} size={"18px"} />
               </Button>
             </HStack>
           );
@@ -516,7 +516,7 @@ export default function InterestsMasters() {
           <ModalOverlay zIndex={1000} />
           <ModalContent maxWidth={"512px"}>
             <ModalHeader borderBottom={"1px solid #E5E7EB"} p={"20px 34px"}>
-              {isEditing ? "Edit Interest" : "Add New Interest"} something
+              {isEditing ? "Edit Interest" : "Add New Interest"}
             </ModalHeader>
             <ModalCloseButton
               borderRadius={"full"}

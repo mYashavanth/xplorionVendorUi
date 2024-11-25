@@ -146,11 +146,11 @@ export default function BudgetTier() {
         suppressHeaderMenuButton: true,
       },
       {
-        headerName: "Budget Tier",
+        headerName: "BUDGET TIER",
         field: "budgetTier",
       },
       {
-        headerName: "Edit",
+        headerName: "EDIT",
         field: "edit",
         cellRenderer: (params) => (
           <Button
@@ -167,7 +167,7 @@ export default function BudgetTier() {
         ),
       },
       {
-        headerName: "Status",
+        headerName: "STATUS",
         field: "status",
         cellRenderer: (params) => (
           <Tag
@@ -224,7 +224,7 @@ export default function BudgetTier() {
               },
             }}
             domLayout="autoHeight"
-            getRowHeight={() => 60}
+            getRowHeight={() => 80}
           />
         </Box>
 

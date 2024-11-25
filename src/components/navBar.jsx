@@ -16,9 +16,13 @@ import { PiNotepad } from "react-icons/pi";
 import { RxDashboard } from "react-icons/rx";
 import { IoLogOutOutline } from "react-icons/io5";
 import { PiUsersThreeThin, PiCityLight } from "react-icons/pi";
-import { HiOutlineClipboardDocumentList } from "react-icons/hi2";
+import {
+  HiOutlineClipboardDocumentList,
+  HiOutlineSquaresPlus,
+} from "react-icons/hi2";
 import { TbPigMoney } from "react-icons/tb";
 import { MdCardTravel } from "react-icons/md";
+
 
 
 
@@ -31,7 +35,7 @@ export default function NavBar() {
 
   useEffect(() => {
     if (navBarRef.current) {
-      console.log(navBarRef.current);
+      // console.log(navBarRef.current);
 
       const navBarHeight = navBarRef.current.offsetHeight;
       console.log(navBarHeight);
@@ -87,6 +91,11 @@ export default function NavBar() {
       name: "Travel Companion",
       icon: MdCardTravel,
       path: "/travel_companion",
+    },
+    {
+      name: "Banner Master",
+      icon: HiOutlineSquaresPlus,
+      path: "/banner_master",
     },
     {
       name: "Logout",

@@ -4,9 +4,7 @@ body {
 }
 .heading,
 .gridContainer,
-.ag-theme-alpine,
-.ag-theme-alpine .ag-header-cell-label,
-.ag-theme-alpine .ag-cell {
+.ag-theme-alpine {
   font-family: "Public Sans", sans-serif !important;
 }
 nav {
@@ -14,6 +12,25 @@ nav {
   top: 0;
   z-index: 999;
 }
-.loadingSection{
+.loadingSection {
   height: calc(100vh - var(--navbar-height));
 }
+/* ag grid styles start */
+.ag-root-wrapper {
+  border-radius: 0 0 8px 8px !important;
+  border: none !important;
+}
+.ag-header {
+  /* border: 1px solid black; */
+  background-color: #f8f9f9 !important;
+}
+.ag-header-cell-label {
+  font-family: "Public Sans", sans-serif !important;
+  font-weight: 700;
+}
+
+.ag-cell {
+  font-family: "Public Sans", sans-serif !important;
+  font-size: 14px;
+}
+/* ag grid styles end */

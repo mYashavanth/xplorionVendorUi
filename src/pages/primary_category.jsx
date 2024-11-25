@@ -126,7 +126,7 @@ export default function PrimaryCategory() {
   };
   const columns = [
     {
-      headerName: "S.No",
+      headerName: "SL",
       valueGetter: "node.rowIndex + 1",
       cellClass: "serial-number-cell",
       width: 150,
@@ -135,10 +135,10 @@ export default function PrimaryCategory() {
       sortable: false,
       suppressHeaderMenuButton: true,
     },
-    { headerName: "Primary Category", field: "primary_category" },
+    { headerName: "PRIMARY CATEGORY", field: "primary_category" },
 
     {
-      headerName: "Created Date",
+      headerName: "CREATED DATE",
       field: "created_date",
       filter: "agDateColumnFilter",
       filterParams: {
@@ -153,7 +153,7 @@ export default function PrimaryCategory() {
       },
     },
     {
-      headerName: "Status",
+      headerName: "STATUS",
       field: "status",
       filter: false,
       cellRenderer: (params) => (
@@ -170,13 +170,13 @@ export default function PrimaryCategory() {
       ),
     },
     {
-      headerName: "Actions",
+      headerName: "ACTION",
       field: "_id",
       filter: false,
       cellRenderer: (params) => (
         <>
           <Button
-            size="sm"
+            size="xs"
             colorScheme="blue"
             onClick={() => {
               setSelectedCategory(params.data);
@@ -184,14 +184,14 @@ export default function PrimaryCategory() {
               onOpen();
             }}
             borderRadius={"full"}
-            w={"48px"}
-            h={"48px"}
+            w={"36px"}
+            h={"36px"}
             bgColor={"transparent"}
             _hover={{ bgColor: "#f5f6f7" }}
             border={"1px solid #626C70"}
             mt={"4px"}
           >
-            <FiEdit color={"#626C70"} size={"24px"} />
+            <FiEdit color={"#626C70"} size={"18px"} />
           </Button>
         </>
       ),
@@ -271,7 +271,7 @@ export default function PrimaryCategory() {
               onGridReady={onGridReady}
               domLayout="autoHeight"
               getRowHeight={(params) => {
-                return 60;
+                return 80;
               }}
             />
           </Box>

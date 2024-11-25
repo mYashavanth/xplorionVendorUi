@@ -135,7 +135,7 @@ export default function CityList() {
   const columnDefs = useMemo(
     () => [
       {
-        headerName: "S.No",
+        headerName: "SL",
         valueGetter: "node.rowIndex + 1",
         cellClass: "serial-number-cell",
         width: 100,
@@ -144,11 +144,11 @@ export default function CityList() {
         sortable: false,
         suppressHeaderMenuButton: true,
       },
-      { headerName: "City / Place", field: "city" },
-      { headerName: "State", field: "state" },
-      { headerName: "Country", field: "country" },
+      { headerName: "CITY / PLACE", field: "city" },
+      { headerName: "STATE", field: "state" },
+      { headerName: "COUNTRY", field: "country" },
       {
-        headerName: "Status",
+        headerName: "STATUS",
         field: "status",
         filter: false,
         sortable: false,
@@ -164,7 +164,7 @@ export default function CityList() {
         ),
       },
       {
-        headerName: "Actions",
+        headerName: "ACTIONS",
         field: "actions",
         cellRenderer: (params) => (
           <Button
@@ -229,7 +229,7 @@ export default function CityList() {
                 },
               }}
               domLayout="autoHeight"
-              getRowHeight={() => 60}
+              getRowHeight={() => 80}
             />
           </Box>
         )}

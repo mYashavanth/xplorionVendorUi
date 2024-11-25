@@ -111,12 +111,12 @@ export default function TravelCompanion() {
         suppressHeaderMenuButton: true,
       },
       {
-        headerName: "Travel Companion Name",
+        headerName: "TRAVEL COMPANION NAME",
         field: "travel_companion_name",
         filter: true,
       },
       {
-        headerName: "Edit",
+        headerName: "EDIT",
         field: "edit",
         cellRenderer: (params) => (
           <Button
@@ -133,7 +133,7 @@ export default function TravelCompanion() {
         ),
       },
       {
-        headerName: "Status",
+        headerName: "STATUS",
         field: "status",
         cellRenderer: (params) => (
           <Tag
@@ -190,7 +190,7 @@ export default function TravelCompanion() {
               },
             }}
             domLayout="autoHeight"
-            getRowHeight={() => 60}
+            getRowHeight={() =>80}
           />
         </Box>
 
