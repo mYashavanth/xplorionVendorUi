@@ -126,12 +126,13 @@ const EditModal = ({
                   m={"0 0 10px 0"}
                   p={"7px"}
                   borderRadius={"80px"}
-                  display={"flex"}
+                  // display={"flex"}
                   alignItems={"center"}
                   justifyContent={"center"}
                   color={"#005CE8"}
                   gap={"8px"}
                   _hover={{ bgColor: "#005CE8", color: "white" }}
+                  display={formData.bannerImage ? "none" : "flex"}
                 >
                   <FiUpload /> Upload Banner Image
                 </FormLabel>
@@ -157,6 +158,8 @@ const EditModal = ({
                       w="100%"
                       h="100%"
                       objectFit={"cover"}
+                      objectPosition={"center"}
+                      borderRadius={"8px"}
                     />
                   ) : (
                     "please upload an image"
@@ -170,6 +173,8 @@ const EditModal = ({
                 color={"#E84646"}
                 _hover={{ bgColor: "#ffdddd" }}
                 borderRadius={"full"}
+                border={"1px solid #E84646"}
+                display={formData.bannerImage ? "block" : "none"}
               >
                 Remove Image
               </Button>
