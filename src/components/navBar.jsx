@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import {
   Center,
   Flex,
@@ -7,38 +7,30 @@ import {
   Spacer,
   Text,
   Icon,
+  Box,
+  VStack,
 } from "@chakra-ui/react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import { AiOutlineHome } from "react-icons/ai";
-import { PiNotepad } from "react-icons/pi";
 import { RxDashboard } from "react-icons/rx";
 import { IoLogOutOutline } from "react-icons/io5";
-import { PiUsersThreeThin, PiCityLight } from "react-icons/pi";
+import { PiUsersThreeThin, PiDiamondThin } from "react-icons/pi";
 import {
   HiOutlineClipboardDocumentList,
   HiOutlineSquaresPlus,
 } from "react-icons/hi2";
-import { TbPigMoney } from "react-icons/tb";
-import { MdCardTravel } from "react-icons/md";
-
-
-
 
 export default function NavBar() {
   const router = useRouter();
   const name = "Admin"; // Change name to test
   const navBarRef = useRef(null);
   const path = router.pathname;
-  console.log({ path });
 
   useEffect(() => {
     if (navBarRef.current) {
-      // console.log(navBarRef.current);
-
       const navBarHeight = navBarRef.current.offsetHeight;
-      console.log(navBarHeight);
       document.documentElement.style.setProperty(
         "--navbar-height",
         `${navBarHeight}px`
@@ -56,41 +48,34 @@ export default function NavBar() {
 
   const navItems = [
     { name: "Dashboard", icon: AiOutlineHome, path: "/" },
-    // { name: "Itineraries", icon: PiNotepad, path: "/login" },
+    { name: "App Users", icon: PiUsersThreeThin, path: "/signed_up_users" },
     {
-      name: "App Users",
-      icon: PiUsersThreeThin,
-      path: "/signed_up_users",
-    },
-    {
-      name: "Primary Category",
-      icon: PiNotepad,
-      path: "/primary_category",
-    },
-    {
-      name: "Interests Masters",
+      group: "Masters",
       icon: RxDashboard,
-      path: "/interests_masters",
+      items: [
+        {
+          name: "Interests Category",
+          icon: PiDiamondThin,
+          path: "/primary_category",
+        },
+        {
+          name: "Sub Interests",
+          icon: PiDiamondThin,
+          path: "/interests_masters",
+        },
+        { name: "Cities", icon: PiDiamondThin, path: "/city_details" },
+        { name: "Budget Tiers", icon: PiDiamondThin, path: "/budget_tier" },
+        {
+          name: "Travel Companion",
+          icon: PiDiamondThin,
+          path: "/travel_companion",
+        },
+      ],
     },
     {
-      name: "Itinerary List",
+      name: "Itineraries Generated",
       icon: HiOutlineClipboardDocumentList,
       path: "/itinerary_list",
-    },
-    {
-      name: "Cities",
-      icon: PiCityLight,
-      path: "/city_details",
-    },
-    {
-      name: "Budget Tiers",
-      icon: TbPigMoney,
-      path: "/budget_tier",
-    },
-    {
-      name: "Travel Companion",
-      icon: MdCardTravel,
-      path: "/travel_companion",
     },
     {
       name: "Banner Master",
@@ -108,7 +93,7 @@ export default function NavBar() {
   ];
 
   const isActive = (path) => router.pathname === path;
-  console.log({ router });
+  const isGroupActive = (items) => items.some((item) => isActive(item.path));
 
   return (
     <nav ref={navBarRef}>
@@ -128,9 +113,7 @@ export default function NavBar() {
           />
         </Center>
         <Spacer />
-        {path === "/login" ? (
-          <></>
-        ) : (
+        {path === "/login" ? null : (
           <HStack ml={4}>
             <Text>Welcome, {name}</Text>
             <Center
@@ -147,27 +130,36 @@ export default function NavBar() {
           </HStack>
         )}
       </Flex>
-      {path === "/login" ? (
-        <></>
-      ) : (
+      {path === "/login" ? null : (
         <Flex p={"12px 180px"} gap={4} bgColor={"white"}>
-          {navItems.map((item) => (
-            <NavItem
-              key={item.name}
-              name={item.name}
-              icon={item.icon}
-              path={item.path}
-              action={item.action}
-              isActive={isActive(item.path)}
-            />
-          ))}
+          {navItems.map((item) =>
+            item.group ? (
+              <Dropdown
+                key={item.group}
+                group={item.group}
+                icon={item.icon}
+                items={item.items}
+                isGroupActive={isGroupActive(item.items)}
+                isActive={isActive}
+              />
+            ) : (
+              <NavItem
+                key={item.name}
+                name={item.name}
+                icon={item.icon}
+                path={item.path}
+                action={item.action}
+                isActive={isActive(item.path)}
+              />
+            )
+          )}
         </Flex>
       )}
     </nav>
   );
 }
 
-function NavItem({ name, icon, path, action, isActive }) {
+function NavItem({ name, icon, path, action, isActive, boxSize = 6 }) {
   return action ? (
     <Center
       as="button"
@@ -190,9 +182,56 @@ function NavItem({ name, icon, path, action, isActive }) {
         cursor="pointer"
         _hover={{ color: "#005CE8" }}
       >
-        <Icon as={icon} boxSize={6} />
+        <Icon as={icon} boxSize={boxSize} />
         <Text>{name}</Text>
       </Center>
     </Link>
+  );
+}
+
+function Dropdown({ group, icon, items, isGroupActive, isActive }) {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <Box
+      position="relative"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <Center
+        color={isHovered || isGroupActive ? "#005CE8" : "#888888"}
+        gap={"8px"}
+        fontWeight={isGroupActive ? "bold" : 400}
+        cursor="pointer"
+        _hover={{ color: "#005CE8" }}
+      >
+        <Icon as={icon} boxSize={6} />
+        <Text>{group}</Text>
+      </Center>
+      {isHovered && (
+        <VStack
+          position="absolute"
+          top="100%"
+          left={0}
+          bg="white"
+          boxShadow="md"
+          p={2}
+          zIndex={10}
+          align="flex-start"
+          w="200px"
+        >
+          {items.map((item) => (
+            <NavItem
+              key={item.name}
+              name={item.name}
+              icon={item.icon}
+              path={item.path}
+              isActive={isActive(item.path)}
+              boxSize={4}
+            />
+          ))}
+        </VStack>
+      )}
+    </Box>
   );
 }
