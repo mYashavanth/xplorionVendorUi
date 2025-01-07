@@ -24,6 +24,10 @@ import {
   FormLabel,
   Input,
   VStack,
+  Select,
+  Text,
+  Skeleton,
+  SkeletonText,
 } from "@chakra-ui/react";
 import { PiNotepad } from "react-icons/pi";
 import { useEffect, useRef, useState } from "react";
@@ -38,7 +42,7 @@ const ImageModal = ({ imageUrl, isOpen, onClose }) => (
       <ModalHeader>Uploaded Image</ModalHeader>
       <ModalCloseButton />
       <ModalBody>
-        <Image src={imageUrl} alt="Uploaded Image" w="100%" />
+        <Image src={`${imageUrl}`} alt="Uploaded Image" w="100%" />
       </ModalBody>
     </ModalContent>
   </Modal>
@@ -51,18 +55,114 @@ const EditModal = ({
   setIsEditing,
   formData,
   setFormData,
+  authToken,
+  fetchData,
 }) => {
+  const [travelCompanions, setTravelCompanions] = useState([]);
+  const [budgetType, setBudgetType] = useState([]);
   const [imageToDisplay, setImageToDisplay] = useState(null);
+  const [errors, setErrors] = useState({});
+
   useEffect(() => {
     setImageToDisplay(formData.bannerImage);
   }, [formData.bannerImage]);
-  function handleSubmit(event) {
+
+  useEffect(() => {
+    if (!authToken) return; // Avoid unnecessary API calls if authToken is not available
+
+    const fetchTravelCompanions = async () => {
+      try {
+        const [companionsResponse, budgetResponse] = await Promise.all([
+          axios.get(
+            `https://xplorionai-bryz7.ondigitalocean.app/app/masters/travel-companion-names/${authToken}`
+          ),
+          axios.get(
+            `https://xplorionai-bryz7.ondigitalocean.app/app/masters/budget-tier/${authToken}`
+          ),
+        ]);
+
+        setTravelCompanions(companionsResponse.data);
+        setBudgetType(budgetResponse.data);
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+      }
+    };
+
+    fetchTravelCompanions();
+  }, [authToken]);
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+
+    // Validate form fields
+    const newErrors = {};
+    const currentDate = new Date();
+    const minBookingDate = new Date();
+    minBookingDate.setDate(currentDate.getDate() + 1); // Adds 5 days to the current date
+    minBookingDate.setHours(0, 0, 0, 0); // Set to midnight for consistent comparison
+
+    if (!formData.bannerTitle.trim())
+      newErrors.bannerTitle = "Banner Title is required";
+    if (!formData.bannerDescription.trim())
+      newErrors.bannerDescription = "Banner Description is required";
+    if (!formData.fromDate) newErrors.fromDate = "From Date is required";
+    if (new Date(formData.fromDate) < minBookingDate) {
+      newErrors.fromDate = `From Date must be at least 1 days from today (${minBookingDate.toLocaleDateString()})`;
+    }
+    if (!formData.toDate) newErrors.toDate = "To Date is required";
+    if (new Date(formData.fromDate) > new Date(formData.toDate))
+      newErrors.toDate = "To Date must be after From Date";
+    if (!formData.travelCompanion)
+      newErrors.travelCompanion = "Travel Companion is required";
+    if (!formData.budgetType) newErrors.budgetType = "Budget Type is required";
+    if (!formData.bannerImage)
+      newErrors.bannerImage = "Banner Image is required";
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors); // Display errors
+      return; // Stop submission
+    }
+
+    setErrors({}); // Clear errors if all validations pass
+
     console.log({ "Form submitted": isEditing, formData });
 
-    event.preventDefault();
+    let apiUrl = isEditing
+      ? `https://xplorionai-bryz7.ondigitalocean.app/admin/masters/home-page-banners/edit`
+      : `https://xplorionai-bryz7.ondigitalocean.app/admin/masters/home-page-banners/add`;
+
+    const submitFormData = new FormData();
+    submitFormData.append("token", authToken);
+    submitFormData.append("bannerTitle", formData.bannerTitle);
+    submitFormData.append("bannerDescription", formData.bannerDescription);
+    submitFormData.append("bannerImage", formData.bannerImage);
+    submitFormData.append("fromDate", formData.fromDate);
+    submitFormData.append("toDate", formData.toDate);
+    submitFormData.append("travelCompanion", formData.travelCompanion);
+    submitFormData.append("budgetType", formData.budgetType);
+
+    if (isEditing) {
+      submitFormData.append("_id", formData._id);
+    }
+
+    try {
+      const response = await axios.post(apiUrl, submitFormData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      console.log({ response });
+
+      fetchData();
+    } catch (error) {
+      console.error("Error while submitting the data:", error.message);
+    }
+
     setIsEditing(false);
     onClose();
   }
+
   function handleFileChange(event) {
     const file = event.target.files[0];
     const reader = new FileReader();
@@ -74,13 +174,27 @@ const EditModal = ({
       setImageToDisplay(reader.result);
     };
     reader.readAsDataURL(file);
+    setErrors({ ...errors, bannerImage: "" });
   }
+
+  const handleInputChange = (field, value) => {
+    setFormData({ ...formData, [field]: value });
+
+    if (!value.trim()) {
+      setErrors({ ...errors, [field]: `${field} is required` });
+    } else {
+      const updatedErrors = { ...errors };
+      delete updatedErrors[field];
+      setErrors(updatedErrors);
+    }
+  };
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="md" isCentered>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader borderBottom={"1px solid #E5E7EB"} p={"20px 34px"}>
-          Edit Details
+          {isEditing ? "Edit Details" : "Create New"}
         </ModalHeader>
         <ModalCloseButton
           borderRadius={"full"}
@@ -93,40 +207,104 @@ const EditModal = ({
         <form onSubmit={handleSubmit}>
           <ModalBody p={"20px 34px 60px"} bgColor={"#f5f6f7"}>
             <VStack spacing={6}>
-              <FormControl>
-                <FormLabel>Banner Heading/ Title</FormLabel>
+              <FormControl isInvalid={errors.bannerTitle}>
+                <FormLabel>Banner Title</FormLabel>
                 <Input
-                  placeholder="Banner Heading/ Title"
-                  value={formData.title}
+                  placeholder="Banner Title"
+                  value={formData.bannerTitle}
                   onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      title: e.target.value,
-                    })
+                    handleInputChange("bannerTitle", e.target.value)
                   }
                 />
+                {errors.bannerTitle && (
+                  <Text color="red.500">{errors.bannerTitle}</Text>
+                )}
               </FormControl>
-              <FormControl>
-                <FormLabel>Page Redirection</FormLabel>
+              <FormControl isInvalid={errors.bannerDescription}>
+                <FormLabel>Banner Description</FormLabel>
                 <Input
-                  placeholder="Page Redirection"
-                  value={formData.pageLink}
+                  placeholder="Banner Description"
+                  value={formData.bannerDescription}
                   onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      pageLink: e.target.value,
-                    })
+                    handleInputChange("bannerDescription", e.target.value)
                   }
                 />
+                {errors.bannerDescription && (
+                  <Text color="red.500">{errors.bannerDescription}</Text>
+                )}
               </FormControl>
-              <FormControl>
+              <FormControl isInvalid={errors.fromDate}>
+                <FormLabel>From Date</FormLabel>
+                <Input
+                  type="date"
+                  value={formData.fromDate}
+                  onChange={(e) => {
+                    handleInputChange("fromDate", e.target.value);
+                  }}
+                />
+                {errors.fromDate && (
+                  <Text color="red.500">{errors.fromDate}</Text>
+                )}
+              </FormControl>
+              <FormControl isInvalid={errors.toDate}>
+                <FormLabel>To Date</FormLabel>
+                <Input
+                  type="date"
+                  value={formData.toDate}
+                  onChange={(e) => {
+                    handleInputChange("toDate", e.target.value);
+                  }}
+                />
+                {errors.toDate && <Text color="red.500">{errors.toDate}</Text>}
+              </FormControl>
+              <FormControl isInvalid={errors.travelCompanion}>
+                <FormLabel>Travel Companion</FormLabel>
+                <Select
+                  placeholder="Select Travel Companion"
+                  value={formData.travelCompanion}
+                  onChange={(e) => {
+                    handleInputChange("travelCompanion", e.target.value);
+                  }}
+                >
+                  {travelCompanions.map((companion) => (
+                    <option
+                      key={companion._id}
+                      value={companion.travel_companion_name}
+                    >
+                      {companion.travel_companion_name}
+                    </option>
+                  ))}
+                </Select>
+                {errors.travelCompanion && (
+                  <Text color="red.500">{errors.travelCompanion}</Text>
+                )}
+              </FormControl>
+              <FormControl isInvalid={errors.budgetType}>
+                <FormLabel>Budget Type</FormLabel>
+                <Select
+                  placeholder="Select Budget Type"
+                  value={formData.budgetType}
+                  onChange={(e) => {
+                    handleInputChange("budgetType", e.target.value);
+                  }}
+                >
+                  {budgetType.map((companion) => (
+                    <option key={companion._id} value={companion.budget_tier}>
+                      {companion.budget_tier}
+                    </option>
+                  ))}
+                </Select>
+                {errors.budgetType && (
+                  <Text color="red.500">{errors.budgetType}</Text>
+                )}
+              </FormControl>
+              <FormControl isInvalid={errors.bannerImage}>
                 <FormLabel
                   cursor={"pointer"}
                   border={"1px solid #005CE8"}
                   m={"0 0 10px 0"}
                   p={"7px"}
                   borderRadius={"80px"}
-                  // display={"flex"}
                   alignItems={"center"}
                   justifyContent={"center"}
                   color={"#005CE8"}
@@ -162,9 +340,12 @@ const EditModal = ({
                       borderRadius={"8px"}
                     />
                   ) : (
-                    "please upload an image"
+                    "Please upload an image"
                   )}
                 </Box>
+                {errors.bannerImage && (
+                  <Text color="red.500">{errors.bannerImage}</Text>
+                )}
               </FormControl>
               <Button
                 onClick={() => setFormData({ ...formData, bannerImage: "" })}
@@ -202,6 +383,7 @@ export default function BannerMaster() {
   const [isEditing, setIsEditing] = useState(false);
   const baseURL = process.env.NEXT_PUBLIC_BASE_URL;
   const authToken = useAuth(baseURL);
+  const [isLoading, setIsLoading] = useState(false);
   const {
     isOpen: isImageModalOpen,
     onOpen: onImageModalOpen,
@@ -217,16 +399,27 @@ export default function BannerMaster() {
 
   const [formData, setFormData] = useState({
     _id: "",
-    title: "",
-    pageLink: "",
+    bannerTitle: "",
+    bannerDescription: "",
     bannerImage: "",
+    fromDate: "",
+    toDate: "",
+    travelCompanion: "",
+    budgetType: "",
   });
   function handleEdit(rowData) {
     setIsEditing(true);
     onEditModalOpen();
     setFormData((prev) => ({
       ...prev,
-      ...rowData,
+      _id: rowData._id,
+      bannerTitle: rowData.banner_title,
+      bannerDescription: rowData.banner_description,
+      bannerImage: `${rowData.banner_image}`,
+      fromDate: rowData.fromDate,
+      toDate: rowData.toDate,
+      travelCompanion: rowData.travelCompanion,
+      budgetType: rowData.budgetType,
     }));
   }
   function handleAddNew() {
@@ -234,41 +427,52 @@ export default function BannerMaster() {
     setIsEditing(false);
     setFormData({
       _id: "",
-      title: "",
-      pageLink: "",
+      bannerTitle: "",
+      bannerDescription: "",
       bannerImage: "",
+      fromDate: "",
+      toDate: "",
+      travelCompanion: "",
+      budgetType: "",
     });
   }
+  const fetchData = async () => {
+    if (!authToken) return; // Prevent unnecessary calls if authToken is not available
+    try {
+      setIsLoading(true);
+      const bannersData = await fetchBannersData(authToken); // Wait for the data to be fetched
+      setRowData(bannersData); // Set the fetched data to rowData
+    } catch (error) {
+      console.error("Error fetching banners data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
   useEffect(() => {
-    setRowData([
-      {
-        _id: 1,
-        title: "title",
-        bannerImage: "https://dummyimage.com/600x400/000/000",
-        pageLink: "pageLink",
-      },
-      {
-        _id: 2,
-        title: "title2",
-        bannerImage: "https://dummyimage.com/600x400/ffdddd/ffdddd",
-        pageLink: "pageLink2",
-      },
-      {
-        _id: 3,
-        title: "title3",
-        bannerImage: "https://dummyimage.com/600x400/dddddd/dddddd",
-        pageLink: "pageLink3",
-      },
-    ]);
-  }, []);
+    fetchData(); // Call the async function
+  }, [authToken]);
+
+  // Ensure the fetchBannersData function remains unchanged
+  async function fetchBannersData(authToken) {
+    try {
+      const response = await axios.get(
+        `https://xplorionai-bryz7.ondigitalocean.app/admin/masters/home-page-banners/all/${authToken}`
+      );
+      console.log({ bannersData: response.data });
+      return response.data;
+    } catch (error) {
+      console.error("Failed to fetch banners data:", error);
+      throw error; // Rethrow error to be handled by the caller
+    }
+  }
 
   const columns = [
     {
-      headerName: "HEADING/ TITLE",
-      field: "title",
+      headerName: "TITLE",
+      field: "banner_title",
     },
     {
-      headerName: "UPLOADED IMAGE",
+      headerName: "UPLOADED IMG",
       field: "bannerImage",
       cellRenderer: (params) => (
         <a
@@ -285,13 +489,104 @@ export default function BannerMaster() {
       ),
     },
     {
-      headerName: "PAGE LINK",
-      field: "pageLink",
+      headerName: "DESCRIPTION",
+      field: "banner_description",
+    },
+    {
+      headerName: "DATE RANGE",
+      field: "_id",
+      minWidth: 190,
+      cellStyle: { whiteSpace: "pre-wrap" },
+      cellRenderer: (params) => {
+        const { fromDate, toDate } = params.data;
+        return (
+          <Box whiteSpace="pre-wrap">
+            <Box>{fromDate}</Box>
+            <Box>To {toDate}</Box>
+          </Box>
+        );
+      },
+      valueFormatter: (params) =>
+        `${params.data.fromDate} to ${params.data.toDate}`,
+      valueGetter: (params) => ({
+        fromDate: params.data.fromDate,
+        toDate: params.data.toDate,
+        fullData: params.data, // Include full row data if needed
+      }),
+      filter: "agDateColumnFilter",
+      filterParams: {
+        comparator: (filterLocalDateAtMidnight, cellValue) => {
+          const { fromDate, toDate } = cellValue;
+
+          const cellStartDate = new Date(fromDate);
+          cellStartDate.setHours(0, 0, 0, 0); // Ensure time starts at midnight
+
+          const cellEndDate = new Date(toDate);
+          cellEndDate.setHours(0, 0, 0, 0); // Ensure time starts at midnight
+
+          // console.log({
+          //   filterLocalDateAtMidnight,
+          //   cellStartDate,
+          //   cellEndDate,
+          // });
+
+          if (
+            filterLocalDateAtMidnight.getTime() === cellStartDate.getTime() ||
+            filterLocalDateAtMidnight.getTime() === cellEndDate.getTime() ||
+            (filterLocalDateAtMidnight >= cellStartDate &&
+              filterLocalDateAtMidnight <= cellEndDate)
+          ) {
+            return 0; // Matches the range
+          } else if (filterLocalDateAtMidnight < cellStartDate) {
+            return 1; // Before the range
+          } else if (filterLocalDateAtMidnight > cellEndDate) {
+            return -1; // After the range
+          }
+        },
+      },
+    },
+    {
+      headerName: "COMPANION",
+      field: "travelCompanion",
+      maxWidth: 130,
+    },
+    {
+      headerName: "BUDGET",
+      field: "budgetType",
+      maxWidth: 130,
+    },
+    {
+      headerName: "CREATED DATE",
+      field: "created_date",
+      cellRenderer: (params) => {
+        const date = params.data.created_date;
+        return `${date}`;
+      },
+      filter: "agDateColumnFilter",
+      filterParams: {
+        comparator: (filterLocalDateAtMidnight, cellValue) => {
+          const date = cellValue; // Extract date part only for comparison
+          const dateParts = date.split("-");
+          const year = Number(dateParts[0]);
+          const month = Number(dateParts[1]) - 1;
+          const day = Number(dateParts[2]);
+          const cellDate = new Date(year, month, day);
+
+          if (cellDate < filterLocalDateAtMidnight) {
+            return -1;
+          } else if (cellDate > filterLocalDateAtMidnight) {
+            return 1;
+          } else {
+            return 0;
+          }
+        },
+      },
     },
     {
       headerName: "ACTION",
       field: "_id",
       filter: false,
+      maxWidth: 100,
       cellRenderer: (params) => (
         <Button
           size="xs"
@@ -318,70 +613,96 @@ export default function BannerMaster() {
         <title>Banner Master</title>
       </Head>
       <main className={styles.main}>
-        <Box w={"100%"} h={"auto"} className="gridContainer">
-          <HStack bgColor={"white"} p={"24px"}>
-            <HStack gap={"12px"} alignItems={"center"}>
-              <HiOutlineSquaresPlus color={"#888888"} size={24} />
-              <Heading
-                fontSize={"20px"}
-                fontWeight={600}
-                className="gridContainer"
-              >
-                Banner Master
-              </Heading>
+        {isLoading ? (
+          <Box w={"100%"} h={"auto"} className="gridContainer">
+            <HStack bgColor={"white"} p={"24px"}>
+              <HStack gap={"12px"} alignItems={"center"}>
+                <Skeleton height="24px" width="24px" borderRadius="full" />
+                <SkeletonText noOfLines={1} width="200px" />
+              </HStack>
+              <Spacer />
+              <Skeleton height="40px" width="160px" borderRadius="md" />
             </HStack>
-            <Spacer />
-            <Button
-              bgGradient={"linear(to-r, #0099FF, #54AB6A)"}
-              _hover={{ bgGradient: "linear(to-r, #0099FF, #54AB6A)" }}
-              color={"white"}
-              gap={"8px"}
-              onClick={() => {
-                handleAddNew();
-              }}
+            <Skeleton height="60px" width="100%" mt={4} />
+            <Skeleton height="60px" width="100%" mt={2} />
+            <Skeleton height="60px" width="100%" mt={2} />
+            <Skeleton height="60px" width="100%" mt={2} />
+            <Skeleton height="60px" width="100%" mt={2} />
+          </Box>
+        ) : (
+          <Box w={"100%"} h={"auto"} className="gridContainer">
+            <HStack
+              bgColor={"white"}
+              p={"24px"}
+              borderRadius={"8px 8px 0px 0px"}
             >
-              <BsFillPlusCircleFill size={22} />
-              Add New
-            </Button>
-          </HStack>
-          <AgGridReact
-            className="ag-theme-quartz"
-            rowData={Array.isArray(rowData) ? rowData : []}
-            columnDefs={columns}
-            pagination={true}
-            paginationPageSize={5}
-            paginationPageSizeSelector={[5, 10, 15]}
-            enableCellTextSelection={true}
-            defaultColDef={{
-              sortable: true,
-              filter: true,
-              floatingFilter: true,
-              resizable: true,
-              flex: 1,
-              filterParams: {
-                debounceMs: 0,
-                buttons: ["reset"],
-              },
-            }}
-            domLayout="autoHeight"
-            getRowHeight={(params) => {
-              return 80;
-            }}
-          />
-        </Box>
+              <HStack gap={"12px"} alignItems={"center"}>
+                <HiOutlineSquaresPlus color={"#888888"} size={24} />
+                <Heading
+                  fontSize={"20px"}
+                  fontWeight={600}
+                  className="gridContainer"
+                >
+                  Banner Master
+                </Heading>
+              </HStack>
+              <Spacer />
+              <Button
+                bgGradient={"linear(to-r, #0099FF, #54AB6A)"}
+                _hover={{ bgGradient: "linear(to-r, #0099FF, #54AB6A)" }}
+                color={"white"}
+                gap={"8px"}
+                onClick={() => {
+                  handleAddNew();
+                }}
+              >
+                <BsFillPlusCircleFill size={22} />
+                Add New
+              </Button>
+            </HStack>
+            <AgGridReact
+              className="ag-theme-quartz"
+              rowData={Array.isArray(rowData) ? rowData : []}
+              columnDefs={columns}
+              pagination={true}
+              paginationPageSize={5}
+              paginationPageSizeSelector={[5, 10, 15]}
+              enableCellTextSelection={true}
+              defaultColDef={{
+                sortable: true,
+                filter: true,
+                floatingFilter: true,
+                resizable: true,
+                flex: 1,
+                filterParams: {
+                  debounceMs: 0,
+                  buttons: ["reset"],
+                },
+              }}
+              domLayout="autoHeight"
+              getRowHeight={(params) => {
+                return 80;
+              }}
+            />
+          </Box>
+        )}
         <ImageModal
           imageUrl={selectedImage}
           isOpen={isImageModalOpen}
           onClose={onImageModalClose}
         />
-        <EditModal
-          isOpen={isEditModalOpen}
-          onClose={onEditModalClose}
-          isEditing={isEditing}
-          setIsEditing={setIsEditing}
-          formData={formData}
-          setFormData={setFormData}
-        />
+        {authToken && (
+          <EditModal
+            isOpen={isEditModalOpen}
+            onClose={onEditModalClose}
+            isEditing={isEditing}
+            setIsEditing={setIsEditing}
+            formData={formData}
+            setFormData={setFormData}
+            authToken={authToken}
+            fetchData={fetchData}
+          />
+        )}
       </main>
     </>
   );

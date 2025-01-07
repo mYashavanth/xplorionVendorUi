@@ -17,6 +17,8 @@ import { AiOutlineHome } from "react-icons/ai";
 import { RxDashboard } from "react-icons/rx";
 import { IoLogOutOutline } from "react-icons/io5";
 import { PiUsersThreeThin, PiDiamondThin } from "react-icons/pi";
+import { RiArrowDropDownLine } from "react-icons/ri";
+
 import {
   HiOutlineClipboardDocumentList,
   HiOutlineSquaresPlus,
@@ -207,6 +209,7 @@ function Dropdown({ group, icon, items, isGroupActive, isActive }) {
       >
         <Icon as={icon} boxSize={6} />
         <Text>{group}</Text>
+        <RiArrowDropDownLine fontSize={24} />
       </Center>
       {isHovered && (
         <VStack
