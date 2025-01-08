@@ -495,6 +495,13 @@ export default function BannerMaster() {
     {
       headerName: "DESCRIPTION",
       field: "banner_description",
+      cellStyle: { whiteSpace: "pre-wrap" },
+      minWidth: 300,
+      cellRenderer: (params) => {
+        // trim the spaces in the starting and ending
+        const description = params.value.trim();
+        return description;
+      },
     },
     {
       headerName: "DATE RANGE",
@@ -684,8 +691,17 @@ export default function BannerMaster() {
                 },
               }}
               domLayout="autoHeight"
-              getRowHeight={(params) => {
-                return 80;
+              // getRowHeight={(params) => {
+              //   return 80;
+              // }}
+              getRowHeight={function (params) {
+                const description = params.data?.banner_description || "";
+                const words = description.split(" ").length;
+                const baseHeight = 80;
+                const heightPerWord = 6;
+                const minHeight = 80;
+                const calculatedHeight = baseHeight + words * heightPerWord;
+                return Math.max(minHeight, calculatedHeight);
               }}
             />
           </Box>
