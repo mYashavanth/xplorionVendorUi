@@ -42,7 +42,11 @@ const ImageModal = ({ imageUrl, isOpen, onClose }) => (
       <ModalHeader>Uploaded Image</ModalHeader>
       <ModalCloseButton />
       <ModalBody>
-        <Image src={`${imageUrl}`} alt="Uploaded Image" w="100%" />
+        <Image
+          src={`https://xplorionai-bryz7.ondigitalocean.app/banner-images/${imageUrl}`}
+          alt="Uploaded Image"
+          w="100%"
+        />
       </ModalBody>
     </ModalContent>
   </Modal>
@@ -415,7 +419,7 @@ export default function BannerMaster() {
       _id: rowData._id,
       bannerTitle: rowData.banner_title,
       bannerDescription: rowData.banner_description,
-      bannerImage: `${rowData.banner_image}`,
+      bannerImage: `https://xplorionai-bryz7.ondigitalocean.app/banner-images/${rowData.banner_image}`,
       fromDate: rowData.fromDate,
       toDate: rowData.toDate,
       travelCompanion: rowData.travelCompanion,
@@ -473,13 +477,13 @@ export default function BannerMaster() {
     },
     {
       headerName: "UPLOADED IMG",
-      field: "bannerImage",
+      field: "banner_image",
       cellRenderer: (params) => (
         <a
           href="#"
           onClick={(e) => {
             e.preventDefault();
-            setSelectedImage(params.data.bannerImage);
+            setSelectedImage(params.value);
             onImageModalOpen();
           }}
           style={{ color: "blue", textDecoration: "underline" }}
