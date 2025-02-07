@@ -36,6 +36,8 @@ export default function TravelCompanion() {
       const response = await axios.get(
         `https://xplorionai-bryz7.ondigitalocean.app/app/masters/travel-companion-names/${authToken}`
       );
+      console.log({ companions: response.data });
+
       setRowData(response.data); // Use the fetched API data directly
     } catch (error) {
       console.error("Error fetching companions:", error);
@@ -77,19 +79,19 @@ export default function TravelCompanion() {
           { headers: { Authorization: `Bearer ${authToken}` } }
         );
       } else {
+        console.log({ newCompanion });
+
         // Add new companion
-        const newCompanionData = {
-          travel_companion_name: newCompanion,
-          status: 1,
-        };
-        await axios.post(
-          `https://xplorionai-bryz7.ondigitalocean.app/app/masters/travel-companion-names`,
-          newCompanionData,
-          { headers: { Authorization: `Bearer ${authToken}` } }
+        const formData = new FormData();
+        formData.append("travelCompanionName", newCompanion);
+        formData.append("token", authToken);
+        const response = await axios.post(
+          `${baseURL}/app/masters/travel-companion/add`,
+          formData
         );
+        console.log(response.data);
+        fetchCompanions();
       }
-      // Refetch the data to update the table
-      fetchCompanions();
       onClose(); // Close the modal after submission
       setNewCompanion(""); // Clear the input field
     } catch (error) {
@@ -162,7 +164,6 @@ export default function TravelCompanion() {
             onClick={() => {
               setIsEditing(false);
               setNewCompanion("");
-              setEditingRowIndex(null); // Reset the editing index
               onOpen(); // Open the modal
             }}
           >
@@ -190,7 +191,7 @@ export default function TravelCompanion() {
               },
             }}
             domLayout="autoHeight"
-            getRowHeight={() =>80}
+            getRowHeight={() => 80}
           />
         </Box>
 

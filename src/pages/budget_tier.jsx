@@ -107,13 +107,17 @@ export default function BudgetTier() {
   const handleAddBudgetTier = async () => {
     if (newBudgetTier.trim() === "") return;
 
+    const formData = new FormData();
+    formData.append("token", authToken);
+    formData.append("budgetTierName", newBudgetTier);
+
     try {
       const response = await axios.post(
-        `https://xplorionai-bryz7.ondigitalocean.app/app/masters/budget-tier`,
-        { budget_tier: newBudgetTier, status: 1 },
-        { headers: { Authorization: `Bearer ${authToken}` } }
+        `${baseURL}/app/masters/budget-tier/add`,
+        formData
       );
 
+      console.log(response.data);
       setRowData((prevData) => [
         ...prevData,
         { id: response.data._id, budgetTier: newBudgetTier, status: 1 },

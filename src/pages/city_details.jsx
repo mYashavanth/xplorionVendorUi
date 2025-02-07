@@ -58,12 +58,29 @@ export default function CityList() {
   }, [authToken]);
 
   // Function to toggle the status
-  const toggleStatus = useCallback((rowIndex) => {
-    setRowData((prevData) =>
-      prevData.map((row, index) =>
-        index === rowIndex ? { ...row, status: row.status === 1 ? 0 : 1 } : row
-      )
-    );
+  const toggleStatus = useCallback(async (rowData) => {
+    const formData = new FormData();
+    formData.append("token", authToken);
+    formData.append("cityId", rowData._id);
+    formData.append("status", rowData.status === 1 ? 0 : 1);
+    try {
+      const response = await axios.post(
+        `${baseURL}/system-users/city/update/status`,
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+      console.log({ statusData: response.data });
+      setRowData((prevData) =>
+        prevData.map((row) => {
+          if (row._id === rowData._id) {
+            return { ...row, status: rowData.status === 1 ? 0 : 1 };
+          }
+          return row;
+        })
+      );
+    } catch (error) {
+      console.error("Error updating status:", error);
+    }
   }, []);
 
   // Handle adding or editing a city
@@ -78,15 +95,13 @@ export default function CityList() {
     formData.append("countryName", country);
 
     if (isEditing) {
-      const cityToEdit = rowData[editingRowIndex];
+      console.log({ editingRowIndex });
+
       try {
         await axios.put(
-          `https://xplorionai-bryz7.ondigitalocean.app/app/masters/city/${cityToEdit.id}`,
-          {
-            ...formData,
-            status: cityToEdit.status,
-          },
-          { headers: { Authorization: `Bearer ${authToken}` } }
+          `https://xplorionai-bryz7.ondigitalocean.app/app/masters/city/${editingRowIndex}`,
+          formData,
+          { headers: { "Content-Type": "multipart/form-data" } }
         );
 
         setRowData((prevData) =>
@@ -155,7 +170,7 @@ export default function CityList() {
         cellRenderer: (params) => (
           <Tag
             colorScheme={params.value === 1 ? "green" : "red"}
-            onClick={() => toggleStatus(params.node.rowIndex)}
+            onClick={() => toggleStatus(params.data)}
             cursor="pointer"
             mt={2}
           >
@@ -175,7 +190,7 @@ export default function CityList() {
                 state: params.data.state,
                 country: params.data.country,
               });
-              setEditingRowIndex(params.node.rowIndex);
+              setEditingRowIndex(params.data._id);
               setIsEditing(true);
               onOpen();
             }}

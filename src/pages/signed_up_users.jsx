@@ -108,17 +108,28 @@ export default function SignedUpUsers() {
   const updateToken = useCallback(
     async (userId, newStatus) => {
       if (!authToken) return;
+      const formData = new FormData();
+      formData.append("userToken", authToken);
+      formData.append("appUserId", userId);
+      formData.append("status", newStatus);
 
       try {
         setBtnLoading((prev) => ({ ...prev, [userId]: true }));
-        await axios.post(
-          `${baseURL}/app/super-admin/app-users/all/token-update/${userId}`,
-          {
-            status: newStatus,
-            token: authToken,
-          }
+        const response = await axios.post(
+          `${baseURL}/app/system-users/appuser-update-status`,
+          formData
         );
-        fetchUserData(); // Refresh the data
+        console.log({ response, data: response.data, newStatus, userId });
+
+        // fetchUserData(); // Refresh the data
+        setRowData((prevData) => {
+          return prevData.map((item) => {
+            if (item._id === userId) {
+              return { ...item, status: newStatus };
+            }
+            return item;
+          });
+        });
       } catch (error) {
         console.error("Error updating status:", error.message);
       } finally {
