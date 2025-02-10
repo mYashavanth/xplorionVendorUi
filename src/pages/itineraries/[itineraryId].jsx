@@ -19,32 +19,36 @@ import {
   ListIcon,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
-import { IoLocationOutline } from "react-icons/io5";
+import { IoLocationOutline, IoFastFoodOutline } from "react-icons/io5";
 import { CiCalendar } from "react-icons/ci";
 import Head from "next/head";
 import { useEffect, useRef, useState } from "react";
 import styles from "../../styles/itineraries.module.css";
-import { IoIosArrowBack } from "react-icons/io";
+import { IoIosArrowBack, IoMdTime } from "react-icons/io";
 import { TfiDownload } from "react-icons/tfi";
 import { PiQuotes } from "react-icons/pi";
 import { FaRegCircle } from "react-icons/fa6";
 import { HiOutlineClipboardDocumentList } from "react-icons/hi2";
-import { IoFastFoodOutline } from "react-icons/io5";
 import { TbBeach } from "react-icons/tb";
-import { IoMdTime } from "react-icons/io";
 import { TiInfoOutline } from "react-icons/ti";
 import { MdOutlineTipsAndUpdates } from "react-icons/md";
 import { GoChecklist } from "react-icons/go";
 
+import useAuth from "@/components/useAuth";
+
 export default function Itinerary() {
   const route = useRouter();
   const { itineraryId } = route.query;
+  // console.log({ itineraryId });
+  const baseURL = process.env.NEXT_PUBLIC_BASE_URL;
+  const authToken = useAuth(baseURL);
 
   const headerRef = useRef(null);
   const navRef = useRef(null);
   const [activeSection, setActiveSection] = useState("summary");
   const [combinedHeight, setCombinedHeight] = useState(0);
-  const numberOfDays = 3;
+  const [numberOfDays, setNumberOfDays] = useState(0);
+  const [itineraryData, setItineraryData] = useState({});
   const navItemsData = [
     { id: "localFood", name: "Local Food", icon: IoFastFoodOutline },
     { id: "nationalHolidays", name: "National holidays", icon: TbBeach },
@@ -127,6 +131,27 @@ export default function Itinerary() {
     return false;
   };
 
+  async function fetchData() {
+    try {
+      const response = await fetch(
+        `${baseURL}/app/masters/itinerary-requests/${itineraryId}/${authToken}`
+      );
+      const data = await response.json();
+      // console.log(data);
+      setItineraryData(data[0]);
+      setNumberOfDays(data[0]?.itinerary?.itinerary?.days?.length);
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
+
+  useEffect(() => {
+    if (!authToken || !itineraryId) return;
+    fetchData();
+  }, [authToken, itineraryId]);
+
+  // console.log({ itineraryData, numberOfDays });
+
   return (
     <>
       <Head>
@@ -142,16 +167,17 @@ export default function Itinerary() {
         >
           <VStack alignItems={"flex-start"} gap={"34px"}>
             <Heading className="heading">
-              Kochi ( Cochin ) 5 days - Friends
+              {itineraryData?.cityStateCountry} {numberOfDays} days -{" "}
+              {itineraryData?.travelCompanion}
             </Heading>
             <HStack gap={"16px"}>
               <HStack>
                 <IoLocationOutline />
-                <Text>Kochi (Cochin), India</Text>
+                <Text>{itineraryData?.cityStateCountry}</Text>
               </HStack>
               <HStack>
                 <CiCalendar />
-                <Text>5 days</Text>
+                <Text>{numberOfDays} days</Text>
               </HStack>
               <HStack>
                 {["Sightseeing", "Food and wine", "Nightlife", "Hiking"].map(
@@ -183,7 +209,7 @@ export default function Itinerary() {
               _hover={{ bgColor: "#E8E8E8" }}
               fontWeight={600}
             >
-              <IoIosArrowBack /> <Text>Back</Text>
+              <IoIosArrowBack /> <Text onClick={() => route.back()}>Back</Text>
             </Button>
             <Button
               variant="ghost"
@@ -210,7 +236,22 @@ export default function Itinerary() {
             borderRight="1px dashed #E5E5E5"
             padding="16px"
             // border={"1px solid black"}
-            // overflowY={"scroll"}
+            overflowY={"scroll"}
+            sx={{
+              "&::-webkit-scrollbar": {
+                width: "4px", // Set scrollbar width
+              },
+              "&::-webkit-scrollbar-thumb": {
+                background: "#888", // Color of the scrollbar thumb
+                borderRadius: "10px", // Rounded corners
+              },
+              "&::-webkit-scrollbar-thumb:hover": {
+                background: "#555", // Darker on hover
+              },
+              "&::-webkit-scrollbar-track": {
+                background: "#f1f1f1", // Track color
+              },
+            }}
             // w={"fit-content"}
             h={
               "calc(100vh - var(--itinerary-header-height) - var(--navbar-height))"
@@ -280,34 +321,36 @@ export default function Itinerary() {
                   </h2>
                   <AccordionPanel sx={{ border: "none", p: "10px 16px" }}>
                     <List spacing={3}>
-                      {Array.from({ length: numberOfDays }).map((_, index) => (
-                        <ListItem
-                          key={index}
-                          display="flex"
-                          alignItems="center"
-                          // id={`itineraryday${index + 1}`}
-                          onClick={() =>
-                            handleScrollToSection(`itineraryday${index + 1}`)
-                          }
-                          cursor="pointer"
-                          fontWeight={
-                            activeSection === `itineraryday${index + 1}`
-                              ? "bold"
-                              : "normal"
-                          }
-                          color={
-                            activeSection === `itineraryday${index + 1}`
-                              ? "#005CE8"
-                              : "black"
-                          }
-                        >
-                          <ListIcon
-                            as={FaRegCircle}
-                            sx={{ fontSize: "10px" }}
-                          />
-                          day {index + 1}
-                        </ListItem>
-                      ))}
+                      {itineraryData.itinerary?.itinerary?.days?.map(
+                        (_, index) => (
+                          <ListItem
+                            key={index}
+                            display="flex"
+                            alignItems="center"
+                            // id={`itineraryday${index + 1}`}
+                            onClick={() =>
+                              handleScrollToSection(`itineraryday${index + 1}`)
+                            }
+                            cursor="pointer"
+                            fontWeight={
+                              activeSection === `itineraryday${index + 1}`
+                                ? "bold"
+                                : "normal"
+                            }
+                            color={
+                              activeSection === `itineraryday${index + 1}`
+                                ? "#005CE8"
+                                : "black"
+                            }
+                          >
+                            <ListIcon
+                              as={FaRegCircle}
+                              sx={{ fontSize: "10px" }}
+                            />
+                            day {index + 1}
+                          </ListItem>
+                        )
+                      )}
                     </List>
                   </AccordionPanel>
                 </AccordionItem>
@@ -341,25 +384,64 @@ export default function Itinerary() {
           <Box
             flex={1}
             pl={"32px"}
+            display={"flex"}
+            flexDirection={"column"}
+            gap={"32px"}
             // border={"1px solid black"}
           >
             <section
               id="summary"
-              style={{ height: "100vh", border: "1px solid red" }}
+              // style={{ height: "100vh", border: "1px solid red" }}
             >
-              <Heading size="lg">Summary</Heading>
-              <Text mt={4}>Content for Summary</Text>
+              <HStack>
+                <PiQuotes size={"32px"} color={"#005CE8"} />
+                <Heading style={{ fontSize: "24px", fontWeight: "500" }}>
+                  About {itineraryData?.cityStateCountry}
+                </Heading>
+              </HStack>
+              <Text mt={4}>{itineraryData?.itinerary?.about_place}</Text>
             </section>
             {/* sections for days dynamically */}
+            {/* heading for number of days */}
+            <section>
+              <HStack>
+                <HiOutlineClipboardDocumentList
+                  size={"32px"}
+                  color={"#005CE8"}
+                />
+                <Heading style={{ fontSize: "24px", fontWeight: "500" }}>
+                  {numberOfDays} - Day Itinerary
+                </Heading>
+              </HStack>
+            </section>
 
-            {Array.from({ length: numberOfDays }).map((_, index) => (
+            {itineraryData?.itinerary?.itinerary?.days?.map((day, index) => (
               <section
                 key={index}
                 id={`itineraryday${index + 1}`}
-                style={{ height: "100vh", border: "1px solid orange" }}
+                // style={{ height: "100vh", border: "1px solid orange" }}
               >
-                <Heading size="lg">day {index + 1}</Heading>
-                <Text mt={4}>Content for day {index + 1}</Text>
+                <HStack>
+                  <FaRegCircle color={"#005CE8"} />
+                  <Heading style={{ fontSize: "24px", fontWeight: "500" }}>
+                    Day {index + 1} Itinerary
+                  </Heading>
+                </HStack>
+                <Box ml={6} mt={2} borderTop={"1px dashed #888888"}>
+                  {day?.activities?.map((activity, activityIndex) => (
+                    <Box key={`activity${activityIndex}`} mt={4}>
+                      <Heading style={{ fontSize: "16px", fontWeight: "500" }}>
+                        {activity?.time}: {activity?.activity}
+                      </Heading>
+                      <Text
+                        mt={4}
+                        style={{ fontSize: "16px", color: "#888888" }}
+                      >
+                        {activity.one_line_description_about_place}
+                      </Text>
+                    </Box>
+                  ))}
+                </Box>
               </section>
             ))}
 

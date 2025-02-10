@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { AgGridReact } from "ag-grid-react";
 import {
   Button,
@@ -16,13 +16,17 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
 import styles from "../styles/itinerary_list.module.css";
 import Head from "next/head";
+import axios from "axios";
+import useAuth from "@/components/useAuth";
+import { useRouter } from "next/router";
 
 export default function ItineraryList() {
+  const router = useRouter();
+  const baseURL = process.env.NEXT_PUBLIC_BASE_URL;
+  const authToken = useAuth(baseURL);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [interests, setInterests] = useState([]);
-
-  // Sample data for the ag-Grid
-  const rowData = [
+  const [rowData, setRowData] = useState([
     {
       itenaryId: "IT20240918-01",
       username: "JohnDoe (johndoe@gmail.com)",
@@ -58,11 +62,44 @@ export default function ItineraryList() {
       city: "Sydney",
       interests: ["Surfing", "Hiking", "Wildlife"],
     },
-  ];
+  ]);
+
+  // Sample data for the ag-Grid
+
+  async function fetchData() {
+    try {
+      const response = await axios.get(
+        `${baseURL}/app/masters/itinerary-requests/all/${authToken}`
+      );
+      console.log(response.data);
+      let formatedData = response.data.map((item, index) => ({
+        index: index + 1,
+        ...item,
+      }));
+      setRowData(formatedData);
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
+  useEffect(() => {
+    if (!authToken) return;
+    fetchData();
+  }, [authToken]);
+
+  const handleAction = useCallback(
+    (params) => {
+      console.log("Redirect to details page for:", params.data._id);
+      // Add routing logic here
+      // nvigate to the page inineraries which have a dynamic routing for itineraryId
+
+      router.push(`/itineraries/${params.data._id}`);
+    },
+    [router]
+  );
 
   const handleViewInterests = useCallback(
     (interests) => {
-      setInterests(interests);
+      setInterests(interests.split(","));
       onOpen(); // Open the modal
     },
     [onOpen]
@@ -72,43 +109,61 @@ export default function ItineraryList() {
     () => [
       {
         headerName: "SL",
-        valueGetter: "node.rowIndex + 1",
-        cellClass: "serial-number-cell",
-        width: 150,
+        field: "index",
+        width: 80,
         flex: false,
         filter: false,
         sortable: false,
         suppressHeaderMenuButton: true,
       },
-      { headerName: "ITENARY ID", field: "itenaryId" },
+      { headerName: "ITENARY ID", field: "_id", minWidth: 250 },
       { headerName: "USERNAME & EMAIL", field: "username" },
       {
         headerName: "CREATED DATE & TIME",
         field: "createdDate",
         filter: "agDateColumnFilter",
+        cellRenderer: (params) => {
+          const date = params.data.createdDate;
+          const time = params.data.createdTime;
+          // Use <br> for a line break between date and time
+          return (
+            <div>
+              <div>{date}</div>
+              <div>{time}</div>
+            </div>
+          );
+        },
+        filter: "agDateColumnFilter",
         filterParams: {
-          comparator: (filterDate, cellValue) => {
-            const [year, month, day] = cellValue.split(" ")[0].split("-");
-            const cellDate = new Date(year, month - 1, day);
+          comparator: (filterLocalDateAtMidnight, cellValue) => {
+            console.log({
+              filterLocalDateAtMidnight,
+              cellValue,
+            });
 
-            if (filterDate.getTime() === cellDate.getTime()) {
+            const dateParts = cellValue.split("-");
+            const year = Number(dateParts[0]);
+            const month = Number(dateParts[1]) - 1;
+            const day = Number(dateParts[2]);
+            const cellDate = new Date(year, month, day);
+
+            if (cellDate < filterLocalDateAtMidnight) {
+              return -1;
+            } else if (cellDate > filterLocalDateAtMidnight) {
+              return 1;
+            } else {
               return 0;
             }
-            return filterDate.getTime() > cellDate.getTime() ? -1 : 1;
           },
-          browserDatePicker: true,
-        },
-        valueFormatter: (params) => {
-          const date = new Date(params.value.split(" ")[0]);
-          return date.toISOString().split("T")[0];
         },
       },
-      { headerName: "CITY", field: "city" },
+      { headerName: "CITY", field: "cityStateCountry" },
       {
         headerName: "INTERESTS",
         field: "interests",
         filter: false,
         sortable: false,
+        maxWidth: 170,
         cellRenderer: (params) => (
           <Button
             border={"1px solid #0099FF"}
@@ -118,7 +173,9 @@ export default function ItineraryList() {
             _hover={{
               boxShadow: "xl",
             }}
-            onClick={() => handleViewInterests(params.data.interests)}
+            onClick={() =>
+              handleViewInterests(params.data.primaryCategorySubCategoryData)
+            }
           >
             View Interests
           </Button>
@@ -129,12 +186,13 @@ export default function ItineraryList() {
         field: "action",
         filter: false,
         sortable: false,
+        maxWidth: 100,
         cellRenderer: (params) => (
           <Button
             bgGradient={"linear(to-r, #0099FF, #54AB6A)"}
             color="white"
             size="sm"
-            onClick={() => console.log({ params })}
+            onClick={() => handleAction(params)}
             _hover={{
               bgGradient: "linear(to-r, #0099FF, #54AB6A)",
               boxShadow: "xl",
