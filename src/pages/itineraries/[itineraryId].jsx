@@ -33,6 +33,8 @@ import { TbBeach } from "react-icons/tb";
 import { TiInfoOutline } from "react-icons/ti";
 import { MdOutlineTipsAndUpdates } from "react-icons/md";
 import { GoChecklist } from "react-icons/go";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 import useAuth from "@/components/useAuth";
 
@@ -49,6 +51,7 @@ export default function Itinerary() {
   const [combinedHeight, setCombinedHeight] = useState(0);
   const [numberOfDays, setNumberOfDays] = useState(0);
   const [itineraryData, setItineraryData] = useState({});
+  const [isDownloading, setIsDownloading] = useState(false);
   const navItemsData = [
     { id: "localFood", name: "Local Food", icon: IoFastFoodOutline },
     { id: "nationalHolidays", name: "National holidays", icon: TbBeach },
@@ -129,6 +132,95 @@ export default function Itinerary() {
       }
     }
     return false;
+  };
+
+  const downloadItineraryAsPDF = async () => {
+    setIsDownloading(true); // Start loading
+
+    const input = document.getElementById("itinerary-content");
+
+    try {
+      const canvas = await html2canvas(input, {
+        scale: 2, // High-quality rendering
+        useCORS: true,
+      });
+
+      const pdf = new jsPDF("p", "mm", "a4");
+
+      const pageWidth = 210; // A4 width in mm
+      const pageHeight = 297; // A4 height in mm
+      const padding = 10; // Padding around content
+      const imgWidth = pageWidth - 2 * padding; // Image width with padding
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      const pageImageHeight = pageHeight - 40; // Space for heading on first page
+
+      let heightLeft = imgHeight;
+      let position = padding + 20; // Start position for first page
+      let page = 1;
+      let sourceY = 0;
+
+      while (heightLeft > 0) {
+        if (page > 1) {
+          pdf.addPage();
+          position = padding; // Reset position for subsequent pages
+        }
+
+        // Add heading only on the first page
+        if (page === 1) {
+          pdf.setFontSize(16);
+          pdf.setTextColor(0, 0, 0);
+          pdf.text(
+            `${itineraryData?.cityStateCountry} ${numberOfDays} days - ${itineraryData?.travelCompanion}`,
+            padding + 4,
+            padding + 10
+          );
+        }
+
+        // Capture the portion of the image for this page
+        const canvasPage = document.createElement("canvas");
+        const ctx = canvasPage.getContext("2d");
+
+        canvasPage.width = canvas.width;
+        canvasPage.height = Math.min(
+          canvas.height - sourceY,
+          (pageImageHeight * canvas.width) / imgWidth
+        );
+
+        ctx.drawImage(
+          canvas,
+          0,
+          sourceY,
+          canvas.width,
+          canvasPage.height,
+          0,
+          0,
+          canvas.width,
+          canvasPage.height
+        );
+
+        const pageImgData = canvasPage.toDataURL("image/png");
+        pdf.addImage(
+          pageImgData,
+          "PNG",
+          padding,
+          position,
+          imgWidth,
+          (canvasPage.height * imgWidth) / canvas.width
+        );
+
+        heightLeft -= pageImageHeight;
+        sourceY += canvasPage.height;
+        page++;
+      }
+
+      pdf.save(
+        `${itineraryData?.cityStateCountry}_${numberOfDays}_days_itinerary.pdf`
+      );
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+    } finally {
+      setIsDownloading(false); // Stop loading
+    }
   };
 
   async function fetchData() {
@@ -216,6 +308,8 @@ export default function Itinerary() {
               _hover={{ bgColor: "#EDF2FE" }}
               color={"#005CE8"}
               fontWeight={600}
+              onClick={downloadItineraryAsPDF}
+              isLoading={isDownloading}
             >
               <TfiDownload /> <Text>Download Itinerary</Text>
             </Button>
@@ -387,6 +481,7 @@ export default function Itinerary() {
             display={"flex"}
             flexDirection={"column"}
             gap={"32px"}
+            id="itinerary-content"
             // border={"1px solid black"}
           >
             <section
