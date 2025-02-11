@@ -26,43 +26,7 @@ export default function ItineraryList() {
   const authToken = useAuth(baseURL);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [interests, setInterests] = useState([]);
-  const [rowData, setRowData] = useState([
-    {
-      itenaryId: "IT20240918-01",
-      username: "JohnDoe (johndoe@gmail.com)",
-      createdDate: "2024-09-18 10:35 AM",
-      city: "New York",
-      interests: ["Museums", "Photography", "Food"],
-    },
-    {
-      itenaryId: "IT20240918-02",
-      username: "JaneSmith (janesmith@yahoo.com)",
-      createdDate: "2024-09-17 09:00 AM",
-      city: "Tokyo",
-      interests: ["Tech", "Anime", "Nightlife"],
-    },
-    {
-      itenaryId: "IT20240918-03",
-      username: "AlexBrown (alex.brown@outlook.com)",
-      createdDate: "2024-09-16 03:45 PM",
-      city: "London",
-      interests: ["History", "Walking Tours", "Theatre"],
-    },
-    {
-      itenaryId: "IT20240918-04",
-      username: "MariaGarcia (maria.garcia@hotmail.com)",
-      createdDate: "2024-09-15 01:10 PM",
-      city: "Paris",
-      interests: ["Art", "Fashion", "Wine Tasting"],
-    },
-    {
-      itenaryId: "IT20240918-05",
-      username: "MichaelLee (mikelee@gmail.com)",
-      createdDate: "2024-09-14 08:25 AM",
-      city: "Sydney",
-      interests: ["Surfing", "Hiking", "Wildlife"],
-    },
-  ]);
+  const [rowData, setRowData] = useState([]);
 
   // Sample data for the ag-Grid
 
@@ -71,7 +35,7 @@ export default function ItineraryList() {
       const response = await axios.get(
         `${baseURL}/app/masters/itinerary-requests/all/${authToken}`
       );
-      console.log(response.data);
+      // console.log(response.data);
       let formatedData = response.data.map((item, index) => ({
         index: index + 1,
         ...item,
