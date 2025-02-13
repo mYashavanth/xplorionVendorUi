@@ -13,6 +13,11 @@ import {
   ModalCloseButton,
   ModalBody,
   ModalFooter,
+  HStack,
+  Heading,
+  Spacer,
+  Skeleton,
+  SkeletonText,
 } from "@chakra-ui/react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
@@ -20,19 +25,25 @@ import Head from "next/head";
 import styles from "../styles/budget_tier.module.css";
 import axios from "axios";
 import useAuth from "@/components/useAuth";
+import { FiEdit } from "react-icons/fi";
+import { TbReceiptRupee } from "react-icons/tb";
+import { BsFillPlusCircleFill } from "react-icons/bs";
+
 
 export default function BudgetTier() {
   const baseURL = process.env.NEXT_PUBLIC_BASE_URL;
   const authToken = useAuth(baseURL);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [newBudgetTier, setNewBudgetTier] = useState("");
+  const [budgetTierId, setBudgetTierId] = useState(null);
   const [rowData, setRowData] = useState([]);
-  const [editingRowIndex, setEditingRowIndex] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   // Fetch data from the API
   useEffect(() => {
     const fetchBudgetTiers = async () => {
+      setLoading(true);
       try {
         const response = await axios.get(
           `https://xplorionai-bryz7.ondigitalocean.app/app/masters/budget-tier/${authToken}`
@@ -45,6 +56,8 @@ export default function BudgetTier() {
         setRowData(transformedData);
       } catch (error) {
         console.error("Error fetching budget tiers:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -82,19 +95,16 @@ export default function BudgetTier() {
   const handleEditBudgetTier = async () => {
     if (newBudgetTier.trim() === "") return;
 
-    const budgetTierToEdit = rowData[editingRowIndex];
     try {
       await axios.put(
-        `https://xplorionai-bryz7.ondigitalocean.app/app/masters/budget-tier/${budgetTierToEdit.id}`,
+        `https://xplorionai-bryz7.ondigitalocean.app/app/masters/budget-tier/${budgetTierId}`,
         { budget_tier: newBudgetTier },
         { headers: { Authorization: `Bearer ${authToken}` } }
       );
 
       setRowData((prevData) =>
-        prevData.map((row, index) =>
-          index === editingRowIndex
-            ? { ...row, budgetTier: newBudgetTier }
-            : row
+        prevData.map((row) =>
+          row._id === budgetTierId ? { ...row, budgetTier: newBudgetTier } : row
         )
       );
       resetForm();
@@ -131,7 +141,6 @@ export default function BudgetTier() {
   // Reset form and close modal
   const resetForm = () => {
     setNewBudgetTier("");
-    setEditingRowIndex(null);
     setIsEditing(false);
     onClose();
   };
@@ -143,7 +152,7 @@ export default function BudgetTier() {
         headerName: "SL",
         valueGetter: "node.rowIndex + 1",
         cellClass: "serial-number-cell",
-        width: 100,
+        width: 200,
         flex: false,
         filter: false,
         sortable: false,
@@ -154,25 +163,9 @@ export default function BudgetTier() {
         field: "budgetTier",
       },
       {
-        headerName: "EDIT",
-        field: "edit",
-        cellRenderer: (params) => (
-          <Button
-            colorScheme="blue"
-            onClick={() => {
-              setNewBudgetTier(params.data.budgetTier);
-              setEditingRowIndex(params.node.rowIndex);
-              setIsEditing(true);
-              onOpen();
-            }}
-          >
-            Edit
-          </Button>
-        ),
-      },
-      {
         headerName: "STATUS",
         field: "status",
+        maxWidth: 250,
         cellRenderer: (params) => (
           <Tag
             colorScheme={params.value === 1 ? "green" : "red"}
@@ -182,6 +175,34 @@ export default function BudgetTier() {
           >
             {params.value === 1 ? "Active" : "Inactive"}
           </Tag>
+        ),
+      },
+      {
+        headerName: "EDIT",
+        field: "edit",
+        maxWidth: 250,
+        cellRenderer: (params) => (
+          <>
+            <Button
+              size="xs"
+              colorScheme="blue"
+              onClick={() => {
+                setNewBudgetTier(params.data.budgetTier);
+                setBudgetTierId(params.data._id);
+                setIsEditing(true);
+                onOpen();
+              }}
+              borderRadius={"full"}
+              w={"36px"}
+              h={"36px"}
+              bgColor={"transparent"}
+              _hover={{ bgColor: "#f5f6f7" }}
+              border={"1px solid #626C70"}
+              mt={"4px"}
+            >
+              <FiEdit color={"#626C70"} size={"18px"} />
+            </Button>
+          </>
         ),
       },
     ],
@@ -194,43 +215,80 @@ export default function BudgetTier() {
         <title>Budget Tier</title>
       </Head>
       <main className={styles.main}>
-        <Box mb={4}>
-          <Button
-            colorScheme="teal"
-            onClick={() => {
-              setNewBudgetTier("");
-              setEditingRowIndex(null);
-              setIsEditing(false);
-              onOpen();
-            }}
-          >
-            Add Budget Tier
-          </Button>
-        </Box>
+        {loading ? (
+          <Box w={"100%"} h={"auto"} className="gridContainer">
+            <HStack bgColor={"white"} p={"24px"}>
+              <HStack gap={"12px"} alignItems={"center"}>
+                <Skeleton height="24px" width="24px" borderRadius="full" />
+                <SkeletonText noOfLines={1} width="200px" />
+              </HStack>
+              <Spacer />
+              <Skeleton height="40px" width="160px" borderRadius="md" />
+            </HStack>
+            <Skeleton height="60px" width="100%" mt={4} />
+            <Skeleton height="60px" width="100%" mt={2} />
+            <Skeleton height="60px" width="100%" mt={2} />
+            <Skeleton height="60px" width="100%" mt={2} />
+            <Skeleton height="60px" width="100%" mt={2} />
+          </Box>
+        ) : (
+          <Box w={"100%"} h={"auto"} className="gridContainer">
+            <HStack bgColor={"white"} p={"24px"}>
+              <HStack gap={"12px"} alignItems={"center"}>
+                <TbReceiptRupee color={"#888888"} size={24} />
+                <Heading
+                  fontSize={"20px"}
+                  fontWeight={600}
+                  className="gridContainer"
+                >
+                  Budget Tier
+                </Heading>
+              </HStack>
+              <Spacer />
+              <Button
+                bgGradient={"linear(to-r, #0099FF, #54AB6A)"}
+                _hover={{ bgGradient: "linear(to-r, #0099FF, #54AB6A)" }}
+                color={"white"}
+                gap={"8px"}
+                onClick={() => {
+                  setNewBudgetTier("");
+                  setIsEditing(false);
+                  onOpen();
+                }}
+              >
+                <BsFillPlusCircleFill size={22} />
+                Add Budget Tier
+              </Button>
+            </HStack>
 
-        <Box className="ag-theme-quartz" style={{ height: 400, width: "100%" }}>
-          <AgGridReact
-            rowData={rowData}
-            columnDefs={columnDefs}
-            pagination={true}
-            paginationPageSize={5}
-            paginationPageSizeSelector={[5, 10, 15]}
-            enableCellTextSelection={true}
-            defaultColDef={{
-              sortable: true,
-              filter: true,
-              floatingFilter: true,
-              resizable: true,
-              flex: 1,
-              filterParams: {
-                debounceMs: 0,
-                buttons: ["reset"],
-              },
-            }}
-            domLayout="autoHeight"
-            getRowHeight={() => 80}
-          />
-        </Box>
+            <Box
+              className="ag-theme-quartz"
+              style={{ height: 400, width: "100%" }}
+            >
+              <AgGridReact
+                rowData={rowData}
+                columnDefs={columnDefs}
+                pagination={true}
+                paginationPageSize={5}
+                paginationPageSizeSelector={[5, 10, 15]}
+                enableCellTextSelection={true}
+                defaultColDef={{
+                  sortable: true,
+                  filter: true,
+                  floatingFilter: true,
+                  resizable: true,
+                  flex: 1,
+                  filterParams: {
+                    debounceMs: 0,
+                    buttons: ["reset"],
+                  },
+                }}
+                domLayout="autoHeight"
+                getRowHeight={() => 80}
+              />
+            </Box>
+          </Box>
+        )}
 
         {/* Modal for adding or editing a budget tier */}
         <Modal isOpen={isOpen} onClose={resetForm}>

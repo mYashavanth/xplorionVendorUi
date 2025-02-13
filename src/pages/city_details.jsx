@@ -13,6 +13,11 @@ import {
   ModalBody,
   ModalFooter,
   useDisclosure,
+  HStack,
+  Heading,
+  Spacer,
+  Skeleton,
+  SkeletonText,
 } from "@chakra-ui/react";
 import "ag-grid-community/styles/ag-grid.css";
 // import "ag-grid-community/styles/ag-theme-alpine.css";
@@ -21,13 +26,16 @@ import axios from "axios";
 import Head from "next/head";
 import useAuth from "@/components/useAuth";
 import styles from "../styles/city_details.module.css";
+import { PiCity } from "react-icons/pi";
+import { BsFillPlusCircleFill } from "react-icons/bs";
+import { FiEdit } from "react-icons/fi";
 
 export default function CityList() {
   const baseURL = process.env.NEXT_PUBLIC_BASE_URL;
   const authToken = useAuth(baseURL);
 
   const [rowData, setRowData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [cityData, setCityData] = useState({
     city: "",
     state: "",
@@ -40,6 +48,7 @@ export default function CityList() {
   // Fetch data from the API
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
         const response = await axios.get(
           `https://xplorionai-bryz7.ondigitalocean.app/app/masters/city/all/${authToken}`
@@ -48,6 +57,8 @@ export default function CityList() {
         setLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
+        setLoading(false);
+      } finally {
         setLoading(false);
       }
     };
@@ -182,21 +193,31 @@ export default function CityList() {
         headerName: "ACTIONS",
         field: "actions",
         cellRenderer: (params) => (
-          <Button
-            colorScheme="blue"
-            onClick={() => {
-              setCityData({
-                city: params.data.city,
-                state: params.data.state,
-                country: params.data.country,
-              });
-              setEditingRowIndex(params.data._id);
-              setIsEditing(true);
-              onOpen();
-            }}
-          >
-            Edit
-          </Button>
+          <>
+            <Button
+              size="xs"
+              colorScheme="blue"
+              onClick={() => {
+                setCityData({
+                  city: params.data.city,
+                  state: params.data.state,
+                  country: params.data.country,
+                });
+                setEditingRowIndex(params.data._id);
+                setIsEditing(true);
+                onOpen();
+              }}
+              borderRadius={"full"}
+              w={"36px"}
+              h={"36px"}
+              bgColor={"transparent"}
+              _hover={{ bgColor: "#f5f6f7" }}
+              border={"1px solid #626C70"}
+              mt={"4px"}
+            >
+              <FiEdit color={"#626C70"} size={"18px"} />
+            </Button>
+          </>
         ),
       },
     ],
@@ -209,43 +230,73 @@ export default function CityList() {
         <title>City List</title>
       </Head>
       <main className={styles.main}>
-        <Box>
-          <Button
-            colorScheme="teal"
-            onClick={() => {
-              resetForm();
-              onOpen();
-            }}
-          >
-            Add City
-          </Button>
-        </Box>
-        {/* Loading state */}
         {loading ? (
-          <p>Loading data...</p>
+          <Box w={"100%"} h={"auto"} className="gridContainer">
+            <HStack bgColor={"white"} p={"24px"}>
+              <HStack gap={"12px"} alignItems={"center"}>
+                <Skeleton height="24px" width="24px" borderRadius="full" />
+                <SkeletonText noOfLines={1} width="200px" />
+              </HStack>
+              <Spacer />
+              <Skeleton height="40px" width="160px" borderRadius="md" />
+            </HStack>
+            <Skeleton height="60px" width="100%" mt={4} />
+            <Skeleton height="60px" width="100%" mt={2} />
+            <Skeleton height="60px" width="100%" mt={2} />
+            <Skeleton height="60px" width="100%" mt={2} />
+            <Skeleton height="60px" width="100%" mt={2} />
+          </Box>
         ) : (
-          <Box className="ag-theme-quartz" w={"100%"} h={"auto"}>
-            <AgGridReact
-              rowData={rowData}
-              columnDefs={columnDefs}
-              pagination={true}
-              paginationPageSize={5}
-              paginationPageSizeSelector={[5, 10, 15]}
-              enableCellTextSelection={true}
-              defaultColDef={{
-                sortable: true,
-                filter: true,
-                floatingFilter: true,
-                resizable: true,
-                flex: 1,
-                filterParams: {
-                  debounceMs: 0,
-                  buttons: ["reset"],
-                },
-              }}
-              domLayout="autoHeight"
-              getRowHeight={() => 80}
-            />
+          <Box w={"100%"} h={"auto"} className="gridContainer">
+            <HStack bgColor={"white"} p={"24px"}>
+              <HStack gap={"12px"} alignItems={"center"}>
+                <PiCity color={"#888888"} size={24} />
+                <Heading
+                  fontSize={"20px"}
+                  fontWeight={600}
+                  className="gridContainer"
+                >
+                  City List
+                </Heading>
+              </HStack>
+              <Spacer />
+              <Button
+                bgGradient={"linear(to-r, #0099FF, #54AB6A)"}
+                _hover={{ bgGradient: "linear(to-r, #0099FF, #54AB6A)" }}
+                color={"white"}
+                gap={"8px"}
+                onClick={() => {
+                  resetForm();
+                  onOpen();
+                }}
+              >
+                <BsFillPlusCircleFill size={22} />
+                Add City
+              </Button>
+            </HStack>
+            <Box className="ag-theme-quartz" w={"100%"} h={"auto"}>
+              <AgGridReact
+                rowData={rowData}
+                columnDefs={columnDefs}
+                pagination={true}
+                paginationPageSize={5}
+                paginationPageSizeSelector={[5, 10, 15]}
+                enableCellTextSelection={true}
+                defaultColDef={{
+                  sortable: true,
+                  filter: true,
+                  floatingFilter: true,
+                  resizable: true,
+                  flex: 1,
+                  filterParams: {
+                    debounceMs: 0,
+                    buttons: ["reset"],
+                  },
+                }}
+                domLayout="autoHeight"
+                getRowHeight={() => 80}
+              />
+            </Box>
           </Box>
         )}
 
