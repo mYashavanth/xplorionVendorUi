@@ -53,7 +53,7 @@ export default function NavBar() {
   const getInitials = (name) => {
     const nameParts = name.split(/\s+/);
     if (nameParts.length === 1) {
-      return nameParts[0][0].toUpperCase();
+      return nameParts[0][0];
     }
     return (nameParts[0][0] + nameParts[1][0]).toUpperCase();
   };
@@ -99,6 +99,7 @@ export default function NavBar() {
       icon: IoLogOutOutline,
       action: () => {
         localStorage.removeItem("token");
+        localStorage.removeItem("name");
         router.push("/login");
       },
     },
