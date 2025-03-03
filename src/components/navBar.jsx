@@ -26,7 +26,17 @@ import {
 
 export default function NavBar() {
   const router = useRouter();
-  const name = "Admin"; // Change name to test
+   const [userName , setUserName] = useState("");
+   useEffect(() => {
+     const LogEmail = localStorage.getItem("name");
+     if (LogEmail) {
+       const extractedName = LogEmail.split("@")[0]; // Extracts the part before '@'
+       setUserName(extractedName);
+     }
+   }, []); // Runs only once when the component mounts
+  
+   
+  const name = userName; // Change name to test
   const navBarRef = useRef(null);
   const path = router.pathname;
 

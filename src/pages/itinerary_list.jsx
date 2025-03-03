@@ -182,6 +182,7 @@ export default function ItineraryList() {
         <title>Itinerary List</title>
       </Head>
       <main className={styles.main}>
+        
         <Box>
           {/* Ag-Grid Section */}
           <Box

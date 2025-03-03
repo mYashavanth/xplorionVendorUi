@@ -64,6 +64,7 @@ export default function Login() {
       console.log({response});
       if (response.data.errFlag === 0) {
         localStorage.setItem("token", response.data.token);
+        localStorage.setItem("name", formData.email);
         window.location.href = "/";
       } else {
         console.log(response.data);
