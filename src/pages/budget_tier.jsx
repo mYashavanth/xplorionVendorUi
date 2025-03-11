@@ -72,13 +72,18 @@ export default function BudgetTier() {
       const updatedRow = rowData[rowIndex];
       const newStatus = updatedRow.status === 1 ? 0 : 1;
 
+      const form = new FormData();
+      form.append("token", authToken);
+      form.append("budgetTierId", updatedRow.id);
+      form.append("statusFlag", newStatus);
+
       try {
-        await axios.put(
-          `https://xplorionai-bryz7.ondigitalocean.app/app/masters/budget-tier/${updatedRow.id}`,
-          { status: newStatus },
-          { headers: { Authorization: `Bearer ${authToken}` } }
+       const response = await axios.post(
+          `https://xplorionai-bryz7.ondigitalocean.app/app/masters/budget-tier/update/status`,
+          form
         );
 
+        // console.log(response);
         setRowData((prevData) =>
           prevData.map((row, index) =>
             index === rowIndex ? { ...row, status: newStatus } : row
@@ -167,6 +172,7 @@ export default function BudgetTier() {
         field: "status",
         maxWidth: 250,
         cellRenderer: (params) => (
+          // console.log(params.data),
           <Tag
             colorScheme={params.value === 1 ? "green" : "red"}
             onClick={() => toggleStatus(params.node.rowIndex)}
