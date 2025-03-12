@@ -144,7 +144,7 @@ export default function BudgetTier() {
         formData
       );
 
-      console.log(response.data);
+      // console.log(response.data);
       setRowData((prevData) => [
         ...prevData,
         { id: response.data._id, budgetTier: newBudgetTier, status: 1 },
