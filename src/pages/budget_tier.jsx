@@ -116,8 +116,7 @@ export default function BudgetTier() {
         form        
       );
 
-      console.log(response);
-      // console.log(gridApi)
+      // console.log(response);
 
       setRowData((prevData) =>
         prevData.map((row) =>
@@ -144,7 +143,6 @@ export default function BudgetTier() {
         formData
       );
 
-      // console.log(response.data);
       setRowData((prevData) => [
         ...prevData,
         { id: response.data._id, budgetTier: newBudgetTier, status: 1 },
