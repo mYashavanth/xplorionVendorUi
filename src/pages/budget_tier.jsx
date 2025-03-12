@@ -100,12 +100,24 @@ export default function BudgetTier() {
   const handleEditBudgetTier = async () => {
     if (newBudgetTier.trim() === "") return;
 
+    console.log(budgetTierId, newBudgetTier , "id and name")
+
+    const form = new FormData();
+    form.append("token", authToken);
+    form.append("budgetTierId", budgetTierId);
+    form.append("budgetTierName", newBudgetTier);
+
+    // console.log(Object.fromEntries(form));
+
+
     try {
-      await axios.put(
-        `https://xplorionai-bryz7.ondigitalocean.app/app/masters/budget-tier/${budgetTierId}`,
-        { budget_tier: newBudgetTier },
-        { headers: { Authorization: `Bearer ${authToken}` } }
+    const response =  await axios.post(
+        `https://xplorionai-bryz7.ondigitalocean.app/app/masters/budget-tier/update`,
+        form        
       );
+
+      console.log(response);
+      // console.log(gridApi)
 
       setRowData((prevData) =>
         prevData.map((row) =>
@@ -188,13 +200,14 @@ export default function BudgetTier() {
         field: "edit",
         maxWidth: 250,
         cellRenderer: (params) => (
+          // console.log(params.data),
           <>
             <Button
               size="xs"
               colorScheme="blue"
               onClick={() => {
                 setNewBudgetTier(params.data.budgetTier);
-                setBudgetTierId(params.data._id);
+                setBudgetTierId(params.data.id);
                 setIsEditing(true);
                 onOpen();
               }}
