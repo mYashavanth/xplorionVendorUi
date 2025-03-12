@@ -83,7 +83,7 @@ export default function BudgetTier() {
           form
         );
 
-        // console.log(response);
+        console.log(response);
         setRowData((prevData) =>
           prevData.map((row, index) =>
             index === rowIndex ? { ...row, status: newStatus } : row
