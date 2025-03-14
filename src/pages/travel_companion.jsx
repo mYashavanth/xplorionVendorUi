@@ -40,6 +40,7 @@ export default function TravelCompanion() {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
 
+
   // Fetch data from the API
   const fetchCompanions = async () => {
     setLoading(true);
@@ -64,18 +65,44 @@ export default function TravelCompanion() {
   }, [authToken]);
 
   // Function to toggle status
-  const toggleStatus = useCallback(
-    (rowIndex) => {
-      setRowData((prevData) =>
-        prevData.map((row, index) =>
-          index === rowIndex
-            ? { ...row, status: row.status === 1 ? 0 : 1 }
-            : row
-        )
+ 
+const toggleStatus = useCallback(
+  async (data) => {
+    // Get the new status after toggling
+    const newStatus = data.status === 1 ? 0 : 1;
+
+    // Update the state with the new status
+    setRowData((prevData) =>
+      prevData.map((row) =>
+        row._id === data._id ? { ...row, status: newStatus } : row
+      )
+    );
+
+    // Prepare the form data for the POST request
+    const formData = new FormData();
+    formData.append("token", authToken);
+    formData.append("travelCompanionId", data._id);
+    formData.append("statusFlag", newStatus);
+
+    console.log(Object.fromEntries(formData));
+
+    try {
+      // Send the POST request
+      const response = await fetch(
+        `${baseURL}/app/masters/travel-companion/update/status`,
+        {
+          method: "POST",
+          body: formData,
+        }
       );
-    },
-    [setRowData]
-  );
+
+      console.log("Response:", response);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  },
+  [authToken, baseURL]
+);
 
   // Handle form submission for adding or editing a companion
   const handleSubmit = async () => {
@@ -86,11 +113,33 @@ export default function TravelCompanion() {
           ...rowData[editingRowIndex],
           travel_companion_name: newCompanion,
         };
-        await axios.put(
-          `https://xplorionai-bryz7.ondigitalocean.app/app/masters/travel-companion-names/${updatedCompanion.id}`,
-          updatedCompanion,
-          { headers: { Authorization: `Bearer ${authToken}` } }
+
+        setRowData((prevData) =>
+          prevData.map((row, index) =>
+            index === editingRowIndex ? updatedCompanion : row
+          )
         );
+
+        const form = new FormData();
+        form.append("token", authToken);
+        form.append("travelCompanionId", updatedCompanion._id);
+        form.append(
+          "travelCompanionName",
+          updatedCompanion.travel_companion_name
+        );
+
+        // console.log(Object.fromEntries(form));
+
+       const response = await fetch(
+         `${baseURL}/app/masters/travel-companion/update`,
+         {
+           method: "POST",
+           body: form,
+         }
+       );
+
+        console.log(response);
+
       } else {
         console.log({ newCompanion });
 
@@ -135,9 +184,10 @@ export default function TravelCompanion() {
         field: "status",
         maxWidth: 250,
         cellRenderer: (params) => (
+          // console.log(params.data),
           <Tag
             colorScheme={params.value === 1 ? "green" : "red"}
-            onClick={() => toggleStatus(params.node.rowIndex)}
+            onClick={() => toggleStatus(params.data)}
             cursor="pointer"
             mt={2}
           >

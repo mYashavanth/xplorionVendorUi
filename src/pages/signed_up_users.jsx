@@ -60,7 +60,6 @@ export default function SignedUpUsers() {
           // const fetchedSubCategories = response.data.map(
           //   (item) => item.interest_details[0].sub_category_name
           // );
-
           // Updating the cache with the fetched data
           setFetchedDataCache((prevCache) => ({
             ...prevCache,

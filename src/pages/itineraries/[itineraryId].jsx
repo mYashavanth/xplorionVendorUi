@@ -229,7 +229,7 @@ export default function Itinerary() {
         `${baseURL}/app/masters/itinerary-requests/${itineraryId}/${authToken}`
       );
       const data = await response.json();
-      // console.log(data);
+      console.log(data);
       setItineraryData(data[0]);
       setNumberOfDays(data[0]?.itinerary?.itinerary?.days?.length);
     } catch (error) {
