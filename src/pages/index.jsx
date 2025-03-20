@@ -290,19 +290,20 @@ export default function Home() {
          suppressHeaderMenuButton: true,
        },
        { headerName: "ITENARY ID", field: "_id", minWidth: 250 },
-       { headerName: "USERNAME & EMAIL", field: "username" },
+       //  { headerName: "USERNAME & EMAIL", field: "username" },
+       { headerName: "Time", field: "createdTime", minWidth: 150 },
        {
          headerName: "CREATED DATE & TIME",
          field: "createdDate",
          filter: "agDateColumnFilter",
          cellRenderer: (params) => {
            const date = params.data.createdDate;
-           const time = params.data.createdTime;
+          //  const time = params.data.createdTime;
            // Use <br> for a line break between date and time
            return (
              <div>
                <div>{date}</div>
-               <div>{time}</div>
+               {/* <div>{time}</div> */}
              </div>
            );
          },

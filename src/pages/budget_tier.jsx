@@ -29,12 +29,12 @@ import { FiEdit } from "react-icons/fi";
 import { TbReceiptRupee } from "react-icons/tb";
 import { BsFillPlusCircleFill } from "react-icons/bs";
 
-
 export default function BudgetTier() {
   const baseURL = process.env.NEXT_PUBLIC_BASE_URL;
   const authToken = useAuth(baseURL);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [newBudgetTier, setNewBudgetTier] = useState("");
+  const [budgetIconUrl, setbudgetIconUrl] = useState("");
   const [budgetTierId, setBudgetTierId] = useState(null);
   const [rowData, setRowData] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
@@ -78,7 +78,7 @@ export default function BudgetTier() {
       form.append("statusFlag", newStatus);
 
       try {
-       const response = await axios.post(
+        const response = await axios.post(
           `https://xplorionai-bryz7.ondigitalocean.app/app/masters/budget-tier/update/status`,
           form
         );
@@ -100,23 +100,23 @@ export default function BudgetTier() {
   const handleEditBudgetTier = async () => {
     if (newBudgetTier.trim() === "") return;
 
-    console.log(budgetTierId, newBudgetTier , "id and name")
+    console.log(budgetTierId, newBudgetTier, "id and name");
 
     const form = new FormData();
     form.append("token", authToken);
     form.append("budgetTierId", budgetTierId);
     form.append("budgetTierName", newBudgetTier);
+    form.append("budgetTierIcon", budgetIconUrl);
 
-    // console.log(Object.fromEntries(form));
-
+    console.log(Object.fromEntries(form));
 
     try {
-    const response =  await axios.post(
+      const response = await axios.post(
         `https://xplorionai-bryz7.ondigitalocean.app/app/masters/budget-tier/update`,
-        form        
+        form
       );
 
-      // console.log(response);
+      console.log(response);
 
       setRowData((prevData) =>
         prevData.map((row) =>
@@ -136,6 +136,9 @@ export default function BudgetTier() {
     const formData = new FormData();
     formData.append("token", authToken);
     formData.append("budgetTierName", newBudgetTier);
+    formData.append("budgetTierIcon", budgetIconUrl);
+
+    console.log(Object.fromEntries(formData));
 
     try {
       const response = await axios.post(
@@ -143,6 +146,7 @@ export default function BudgetTier() {
         formData
       );
 
+      // console.log(response);
       setRowData((prevData) => [
         ...prevData,
         { id: response.data._id, budgetTier: newBudgetTier, status: 1 },
@@ -320,6 +324,14 @@ export default function BudgetTier() {
                 placeholder="Enter Budget Tier"
                 value={newBudgetTier}
                 onChange={(e) => setNewBudgetTier(e.target.value)}
+              />
+            </ModalBody>
+
+            <ModalBody>
+              <Input
+                placeholder="Enter Companion Icon URL"
+                value={budgetIconUrl}
+                onChange={(e) => setbudgetIconUrl(e.target.value)}
               />
             </ModalBody>
 

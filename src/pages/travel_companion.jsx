@@ -36,6 +36,7 @@ export default function TravelCompanion() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [rowData, setRowData] = useState([]);
   const [newCompanion, setNewCompanion] = useState("");
+  const [companionUrl, setCompanionUrl] = useState("");
   const [editingRowIndex, setEditingRowIndex] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -127,8 +128,9 @@ const toggleStatus = useCallback(
           "travelCompanionName",
           updatedCompanion.travel_companion_name
         );
+        form.append("travelCompanionIconLink", companionUrl);
 
-        // console.log(Object.fromEntries(form));
+        console.log(Object.fromEntries(form));
 
        const response = await fetch(
          `${baseURL}/app/masters/travel-companion/update`,
@@ -147,6 +149,8 @@ const toggleStatus = useCallback(
         const formData = new FormData();
         formData.append("travelCompanionName", newCompanion);
         formData.append("token", authToken);
+        formData.append("travelCompanionIconLink", companionUrl);
+        // console.log(Object.fromEntries(formData));
         const response = await axios.post(
           `${baseURL}/app/masters/travel-companion/add`,
           formData
@@ -156,6 +160,7 @@ const toggleStatus = useCallback(
       }
       onClose(); // Close the modal after submission
       setNewCompanion(""); // Clear the input field
+      setCompanionUrl("");
     } catch (error) {
       console.error("Error submitting companion data:", error);
     }
@@ -321,6 +326,13 @@ const toggleStatus = useCallback(
                 placeholder="Enter Companion Name"
                 value={newCompanion}
                 onChange={(e) => setNewCompanion(e.target.value)}
+              />
+            </ModalBody>
+            <ModalBody>
+              <Input
+                placeholder="Enter Companion Icon URL"
+                value={companionUrl}
+                onChange={(e) => setCompanionUrl(e.target.value)}
               />
             </ModalBody>
 

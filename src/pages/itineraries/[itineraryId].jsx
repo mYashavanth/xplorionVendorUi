@@ -17,7 +17,19 @@ import {
   List,
   ListItem,
   ListIcon,
+  Card,
+  CardBody,
+  Image,
+  SimpleGrid,
+  Thead,
+  Tr,
+  Th,
+  Tbody,
+  Td,
 } from "@chakra-ui/react";
+import { FaRegHandPointRight } from "react-icons/fa";
+import { Table } from "@chakra-ui/react";
+import { VscActivateBreakpoints } from "react-icons/vsc";
 import { useRouter } from "next/router";
 import { IoLocationOutline, IoFastFoodOutline } from "react-icons/io5";
 import { CiCalendar } from "react-icons/ci";
@@ -37,6 +49,7 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
 import useAuth from "@/components/useAuth";
+// import Image from "next/image";
 
 export default function Itinerary() {
   const route = useRouter();
@@ -44,6 +57,7 @@ export default function Itinerary() {
   // console.log({ itineraryId });
   const baseURL = process.env.NEXT_PUBLIC_BASE_URL;
   const authToken = useAuth(baseURL);
+  const tempToken = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyVG9rZW4iOiJ0ZXN0MTIzQGdtYWlsLmNvbS02NzYzZTFjODM1YWI2ZjVhY2RkYjBmYzEtMjAyNTAzMTcxNDEzMDEifQ.C3aigJ3pW5Is-_Z3Con-TM8G_w6IVuUp7u-Kd-bQGPI`;
 
   const headerRef = useRef(null);
   const navRef = useRef(null);
@@ -51,6 +65,10 @@ export default function Itinerary() {
   const [combinedHeight, setCombinedHeight] = useState(0);
   const [numberOfDays, setNumberOfDays] = useState(0);
   const [itineraryData, setItineraryData] = useState({});
+  const [localFood, setLocalFood] = useState([]);
+  const [holidays, setHolidays] = useState([]);
+  const [bestTimes , setBestTimes] = useState([]);
+  const [tips, setTips] = useState([]);
   const [isDownloading, setIsDownloading] = useState(false);
   const navItemsData = [
     { id: "localFood", name: "Local Food", icon: IoFastFoodOutline },
@@ -237,9 +255,68 @@ export default function Itinerary() {
     }
   }
 
+  async function fetchFoodData() {
+    try {
+      const res = await fetch(
+        `https://xplorionai-bryz7.ondigitalocean.app/food-drinks/$selectedPlace/${tempToken}`
+      );
+      const data = await res.json();
+      // console.log(data);
+      setLocalFood(data);
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
+
+  async function fetchHolidays() {
+    try {
+      const res = await fetch(
+        `https://xplorionai-bryz7.ondigitalocean.app/national-holidays/$selectedPlace/${tempToken}`
+      );
+      const data = await res.json();
+      // console.log(data);
+      setHolidays(data);
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
+
+  async function fetchBestTimes(){
+    try {
+      const res = await fetch(
+      `https://xplorionai-bryz7.ondigitalocean.app/best-time-to-visit-place/$selectedPlace/${tempToken}`
+    )
+
+    const data = await res.json();
+    console.log(data);
+    setBestTimes(data);
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
+
+  async function fetchTips(){
+    try { 
+      const res = await fetch(
+        ` https://xplorionai-bryz7.ondigitalocean.app/tips-for-place/$selectedPlace/${tempToken}`
+      )
+    const data = await res.json();
+    console.log(data);
+    setTips(data);
+  } catch (error) {
+    console.log(error.message);
+  }
+
+}
+
+
   useEffect(() => {
     if (!authToken || !itineraryId) return;
     fetchData();
+    // fetchFoodData();
+    // fetchHolidays();
+    // fetchBestTimes();
+    // fetchTips();
   }, [authToken, itineraryId]);
 
   // console.log({ itineraryData, numberOfDays });
@@ -540,7 +617,140 @@ export default function Itinerary() {
               </section>
             ))}
 
-            {navItemsData.map((item, index) => (
+            <Box
+              style={{
+                padding: "16px",
+              }}
+            >
+              <section id="localFood">
+                <HStack spacing={2} mb={4}>
+                  <IoFastFoodOutline size={"32px"} color={"#005CE8"} />
+                  <Heading style={{ fontSize: "24px", fontWeight: "500" }}>
+                    Local Food
+                  </Heading>
+                </HStack>
+              </section>
+              <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={4}>
+                {localFood?.map((card, index) => (
+                  <Card
+                    key={index}
+                    w="100%"
+                    h="100%"
+                    borderRadius="md"
+                    // boxShadow="md"
+                    overflow="hidden"
+                    zIndex={-1}
+                  >
+                    <Image
+                      src={card.food_drink_image}
+                      alt={card.food_drink_name}
+                      w="full"
+                      h="200px"
+                      objectFit="cover"
+                    />
+                    <CardBody>
+                      <VStack align="start" spacing={2}>
+                        <Heading size="md">{card.food_drink_name}</Heading>
+                        <Text fontSize="sm" color="gray.600">
+                          {card.food_drink_type}
+                        </Text>
+                        <Text>{card.food_drink_description}</Text>
+                      </VStack>
+                    </CardBody>
+                  </Card>
+                ))}
+              </SimpleGrid>
+            </Box>
+
+            <Box padding="16px">
+              <section id="nationalHolidays">
+                <HStack spacing={2} mb={4}>
+                  <TbBeach size="32px" color="#005CE8" />
+                  <Heading fontSize="24px" fontWeight="500">
+                    National Holiday
+                  </Heading>
+                </HStack>
+                <Text>
+                  Here you can find the national calendar of all public holidays
+                  for the year. These dates are subject to change as official
+                  updates occur.
+                </Text>
+              </section>
+
+              <Box mt={8}>
+                <Table variant="simple" size="sm">
+                  <Thead>
+                    <Tr>
+                      <Th borderBottom="2px solid #E2E8F0">Holiday Name</Th>
+                      <Th borderBottom="2px solid #E2E8F0">Date</Th>
+                      <Th borderBottom="2px solid #E2E8F0">Day</Th>
+                    </Tr>
+                  </Thead>
+                  <Tbody>
+                    {holidays?.map((item, index) => (
+                      <Tr key={index}>
+                        <Td py={3} px={4} borderBottom="1px solid #E2E8F0">
+                          {item.date}
+                        </Td>
+                        <Td py={3} px={4} borderBottom="1px solid #E2E8F0">
+                          {item.day}
+                        </Td>
+                        <Td py={3} px={4} borderBottom="1px solid #E2E8F0">
+                          {item.holiday_name}
+                        </Td>
+                      </Tr>
+                    ))}
+                  </Tbody>
+                </Table>
+              </Box>
+            </Box>
+
+            <Box>
+              <section id="bestTimes">
+                <HStack spacing={2} mb={4}>
+                  <IoMdTime size={"32px"} color={"#005CE8"} />
+                  <Heading style={{ fontSize: "24px", fontWeight: "500" }}>
+                    Best Time To Visit
+                  </Heading>
+                </HStack>
+              </section>
+              <Box mt={12}>
+                {bestTimes?.map((time, index) => (
+                  <>
+                    <Box key={index} display={"flex"} gap={4}>
+                      <VscActivateBreakpoints />
+                      <Text mb={2}>{time.tip}</Text>
+                    </Box>
+                    <Box border={"1px  dotted  #E2E8F0"} my={4}></Box>
+                  </>
+                ))}
+              </Box>
+            </Box>
+
+            <Box>
+              <section id="tips">
+                <HStack spacing={2} mb={4}>
+                  <MdOutlineTipsAndUpdates size={"32px"} color={"#005CE8"} />
+                  <Heading style={{ fontSize: "24px", fontWeight: "500" }}>
+                    Tips
+                  </Heading>
+                </HStack>
+              </section>
+
+              <Box mt={12}>
+                {tips?.map((time, index) => (
+                  <>
+                    <Box key={index} display={"flex"} gap={4}>
+                      <FaRegHandPointRight />
+                      <Text mb={2}>{time.tip}</Text>
+                    </Box>
+                    <Box border={"1px  dotted  #E2E8F0"} my={4}></Box>
+                  </>
+                ))}
+              </Box>
+            </Box>
+
+            {/* {navItemsData.map((item, index) => (
               <section
                 key={index}
                 id={item.id}
@@ -549,7 +759,7 @@ export default function Itinerary() {
                 <Heading size="lg">{item.name}</Heading>
                 <Text mt={4}>Content for {item.name}</Text>
               </section>
-            ))}
+            ))} */}
           </Box>
         </Flex>
       </main>
