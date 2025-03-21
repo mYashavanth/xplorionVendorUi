@@ -48,6 +48,8 @@ export default function BudgetTier() {
         const response = await axios.get(
           `https://xplorionai-bryz7.ondigitalocean.app/app/masters/budget-tier/${authToken}`
         );
+
+        console.log(response.data);
         const transformedData = response.data.map((item) => ({
           id: item._id,
           budgetTier: item.budget_tier,

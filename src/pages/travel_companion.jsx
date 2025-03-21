@@ -113,6 +113,7 @@ const toggleStatus = useCallback(
         const updatedCompanion = {
           ...rowData[editingRowIndex],
           travel_companion_name: newCompanion,
+          travel_companion_icon_link: companionUrl,
         };
 
         setRowData((prevData) =>
@@ -130,7 +131,7 @@ const toggleStatus = useCallback(
         );
         form.append("travelCompanionIconLink", companionUrl);
 
-        console.log(Object.fromEntries(form));
+        // console.log(Object.fromEntries(form));
 
        const response = await fetch(
          `${baseURL}/app/masters/travel-companion/update`,
@@ -140,7 +141,7 @@ const toggleStatus = useCallback(
          }
        );
 
-        console.log(response);
+        // console.log(response);
 
       } else {
         console.log({ newCompanion });
@@ -201,9 +202,24 @@ const toggleStatus = useCallback(
         ),
       },
       {
+        headerName: "Icon",
+        field: "travel_companion_icon_link",
+        filter: false,
+        cellRenderer: (params) => (
+          // console.log(params.data.travel_companion_icon_link),
+          <img
+            src={params.data.travel_companion_icon_link}
+            alt={params.data.travel_companion_name}
+            style={{ width: "50px", height: "50px" }}
+          />
+       
+        ),
+      },
+      {
         headerName: "EDIT",
         field: "edit",
         maxWidth: 250,
+        filter: false,
         cellRenderer: (params) => (
           <>
             <Button
