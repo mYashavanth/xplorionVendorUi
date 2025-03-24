@@ -28,6 +28,7 @@ import useAuth from "@/components/useAuth";
 import { FiEdit } from "react-icons/fi";
 import { TbReceiptRupee } from "react-icons/tb";
 import { BsFillPlusCircleFill } from "react-icons/bs";
+import Image from "next/image";
 
 export default function BudgetTier() {
   const baseURL = process.env.NEXT_PUBLIC_BASE_URL;
@@ -54,6 +55,7 @@ export default function BudgetTier() {
           id: item._id,
           budgetTier: item.budget_tier,
           status: item.status,
+          budget_tier_icon: item.budget_tier_icon || null,
         }));
         setRowData(transformedData);
       } catch (error) {
@@ -120,11 +122,17 @@ export default function BudgetTier() {
 
       console.log(response);
 
-      setRowData((prevData) =>
-        prevData.map((row) =>
-          row._id === budgetTierId ? { ...row, budgetTier: newBudgetTier } : row
-        )
-      );
+     setRowData((prevData) =>
+       prevData.map((row) =>
+         row.id === budgetTierId
+           ? {
+               ...row,
+               budgetTier: newBudgetTier,
+               budget_tier_icon: budgetIconUrl,
+             } // Update both fields
+           : row
+       )
+     );
       resetForm();
     } catch (error) {
       console.error("Error editing budget tier:", error);
@@ -182,6 +190,21 @@ export default function BudgetTier() {
       {
         headerName: "BUDGET TIER",
         field: "budgetTier",
+      },
+      {
+        headerName: "ICON",
+        field: "icon",
+        maxWidth: 250,
+        cellRenderer: (params) =>
+          params.data.budget_tier_icon ? (
+            <img
+              src={params.data.budget_tier_icon}
+              alt={params.data.budgetTier}
+              style={{ width: "50px", height: "50px" }}
+            />
+          ) : (
+            <span>No Icon</span>
+          ),
       },
       {
         headerName: "STATUS",
