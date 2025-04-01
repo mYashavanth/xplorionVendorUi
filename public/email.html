@@ -79,6 +79,9 @@
         .toggle-password:hover {
             color: #4a6baf;
         }
+        .toggle-password .eye-icon {
+            margin-right: 5px;
+        }
         button[type="submit"] {
             width: 100%;
             padding: 12px;
@@ -117,14 +120,14 @@
                 <label for="newPassword">New Password</label>
                 <input type="password" id="newPassword" required minlength="8">
                 <button type="button" class="toggle-password" onclick="togglePassword('newPassword', this)">
-                    <span class="eye-icon">👁️</span>
+                    <span class="eye-icon">Show</span>
                 </button>
             </div>
             <div class="form-group">
                 <label for="retypePassword">Retype Password</label>
                 <input type="password" id="retypePassword" required minlength="8">
                 <button type="button" class="toggle-password" onclick="togglePassword('retypePassword', this)">
-                    <span class="eye-icon">👁️</span>
+                    <span class="eye-icon">Show</span>
                 </button>
             </div>
             <button type="submit">Update Password</button>
@@ -141,11 +144,11 @@
             
             if (passwordField.type === "password") {
                 passwordField.type = "text";
-                eyeIcon.textContent = "🙈";
+                eyeIcon.textContent = "Hide";
                 toggleButton.setAttribute('aria-label', 'Hide password');
             } else {
                 passwordField.type = "password";
-                eyeIcon.textContent = "👁️";
+                eyeIcon.textContent = "Show";
                 toggleButton.setAttribute('aria-label', 'Show password');
             }
         }
