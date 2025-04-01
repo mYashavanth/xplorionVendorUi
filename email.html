@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Password | Xplorion AI</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #2c3e50;
+        }
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            padding: 30px;
+            position: relative;
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .logo img {
+            height: 50px;
+        }
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 25px;
+            text-align: center;
+            color: #2c3e50;
+        }
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        input {
+            width: 100%;
+            padding: 12px 40px 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+        input:focus {
+            outline: none;
+            border-color: #4a6baf;
+        }
+        .toggle-password {
+            position: absolute;
+            right: 12px;
+            top: 38px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-size: 16px;
+            color: #7f8c8d;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .toggle-password:hover {
+            color: #4a6baf;
+        }
+        button[type="submit"] {
+            width: 100%;
+            padding: 12px;
+            background-color: #4a6baf;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+        button[type="submit"]:hover {
+            background-color: #3a5a9f;
+        }
+        .message {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 14px;
+        }
+        .message a {
+            color: #4a6baf;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <img src="/xplorionVendorUi/public/login/logo.png" alt="Xplorion AI">
+        </div>
+        <h1>Update Your Password</h1>
+        <form id="passwordForm">
+            <div class="form-group">
+                <label for="newPassword">New Password</label>
+                <input type="password" id="newPassword" required minlength="8">
+                <button type="button" class="toggle-password" onclick="togglePassword('newPassword', this)">
+                    <span class="eye-icon">👁️</span>
+                </button>
+            </div>
+            <div class="form-group">
+                <label for="retypePassword">Retype Password</label>
+                <input type="password" id="retypePassword" required minlength="8">
+                <button type="button" class="toggle-password" onclick="togglePassword('retypePassword', this)">
+                    <span class="eye-icon">👁️</span>
+                </button>
+            </div>
+            <button type="submit">Update Password</button>
+        </form>
+        <!-- <div class="message">
+            <a href="https://xplorion-ai.vercel.app/dashboard">Back to Dashboard</a>
+        </div> -->
+    </div>
+
+    <script>
+        function togglePassword(fieldId, toggleButton) {
+            const passwordField = document.getElementById(fieldId);
+            const eyeIcon = toggleButton.querySelector('.eye-icon');
+            
+            if (passwordField.type === "password") {
+                passwordField.type = "text";
+                eyeIcon.textContent = "🙈";
+                toggleButton.setAttribute('aria-label', 'Hide password');
+            } else {
+                passwordField.type = "password";
+                eyeIcon.textContent = "👁️";
+                toggleButton.setAttribute('aria-label', 'Show password');
+            }
+        }
+
+        document.getElementById('passwordForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const newPassword = document.getElementById('newPassword').value;
+            const retypePassword = document.getElementById('retypePassword').value;
+
+            // Check if passwords match
+            if (newPassword !== retypePassword) {
+                alert('Passwords do not match. Please try again.');
+                return;
+            }
+
+            // Password strength regex: At least 8 characters, one uppercase, one lowercase, one number, one special char
+            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+            if (!passwordRegex.test(newPassword)) {
+                alert('Password must be at least 8 characters long and include:\n- One uppercase letter\n- One lowercase letter\n- One number\n- One special character');
+                return;
+            }
+
+            // Here you would typically send the data to your server
+            alert('Password updated successfully!');
+            // window.location.href = '/dashboard'; // Redirect after success
+        });
+    </script>
+</body>
+</html>
