@@ -28,6 +28,7 @@ import {
   Text,
   Skeleton,
   SkeletonText,
+  Switch,
 } from "@chakra-ui/react";
 import { PiNotepad } from "react-icons/pi";
 import { useEffect, useRef, useState } from "react";
@@ -470,6 +471,29 @@ export default function BannerMaster() {
     }
   }
 
+  //toggle function for switch button
+  const handleToggle = async (data) => {
+    console.log(data.status);
+    const formData = new FormData();
+    formData.append("token", authToken);
+    formData.append("bannerId", data._id);
+    formData.append("statusFlag", data.status == 1 ? 0 : 1);
+    console.log(Object.fromEntries(formData.entries()));
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/admin/masters/home-page-banners/update/status`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+      const responseData = await response.json();
+      console.log(responseData);
+    } catch (error) {
+      console.error("Error toggling course status:", error);
+    }
+  };
+
   const columns = [
     {
       headerName: "TITLE",
@@ -565,6 +589,32 @@ export default function BannerMaster() {
       headerName: "BUDGET",
       field: "budgetType",
       maxWidth: 130,
+    },
+    {
+      field: "status",
+      headerName: "STATUS",
+      filter: false,
+      maxWidth: 150,
+      cellRenderer: (params) => (
+        // console.log(params.data.status),
+        
+        <div
+          style={{
+            // display: "flex",
+            // justifyContent: "center",
+            // alignItems: "center",
+            // height: "100%",
+            // border: "1px solid red",
+            // margin: "auto"
+          }}
+        >
+          <Switch
+            colorScheme="green"
+            onChange={(event) => handleToggle(params.data)}
+            defaultChecked={params.data.status == 1 ? true : false}
+          />
+        </div>
+      ),
     },
     {
       headerName: "CREATED DATE",
