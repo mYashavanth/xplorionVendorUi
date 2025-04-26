@@ -230,6 +230,7 @@ const EditModal = ({
                 <Input
                   placeholder="Banner Description"
                   value={formData.bannerDescription}
+                  maxLength={120}
                   onChange={(e) =>
                     handleInputChange("bannerDescription", e.target.value)
                   }
@@ -597,16 +598,18 @@ export default function BannerMaster() {
       maxWidth: 150,
       cellRenderer: (params) => (
         // console.log(params.data.status),
-        
+
         <div
-          style={{
-            // display: "flex",
-            // justifyContent: "center",
-            // alignItems: "center",
-            // height: "100%",
-            // border: "1px solid red",
-            // margin: "auto"
-          }}
+          style={
+            {
+              // display: "flex",
+              // justifyContent: "center",
+              // alignItems: "center",
+              // height: "100%",
+              // border: "1px solid red",
+              // margin: "auto"
+            }
+          }
         >
           <Switch
             colorScheme="green"
