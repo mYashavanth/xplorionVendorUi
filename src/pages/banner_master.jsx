@@ -35,6 +35,7 @@ import { useEffect, useRef, useState } from "react";
 import { BsFillPlusCircleFill } from "react-icons/bs";
 import { HiOutlineSquaresPlus } from "react-icons/hi2";
 import { FiEdit, FiUpload } from "react-icons/fi";
+import { RiDeleteBin5Line } from "react-icons/ri";
 
 const ImageModal = ({ imageUrl, isOpen, onClose }) => (
   <Modal isOpen={isOpen} onClose={onClose} size="lg" isCentered>
@@ -43,11 +44,7 @@ const ImageModal = ({ imageUrl, isOpen, onClose }) => (
       <ModalHeader>Uploaded Image</ModalHeader>
       <ModalCloseButton />
       <ModalBody>
-        <Image
-          src={`https://xplorionai-bryz7.ondigitalocean.app/banner-images/${imageUrl}`}
-          alt="Uploaded Image"
-          w="100%"
-        />
+        <Image src={`${imageUrl}`} alt="Uploaded Image" w="100%" />
       </ModalBody>
     </ModalContent>
   </Modal>
@@ -101,26 +98,32 @@ const EditModal = ({
 
     // Validate form fields
     const newErrors = {};
-    const currentDate = new Date();
-    const minBookingDate = new Date();
-    minBookingDate.setDate(currentDate.getDate() + 1); // Adds 5 days to the current date
-    minBookingDate.setHours(0, 0, 0, 0); // Set to midnight for consistent comparison
 
     if (!formData.bannerTitle.trim())
       newErrors.bannerTitle = "Banner Title is required";
     if (!formData.bannerDescription.trim())
       newErrors.bannerDescription = "Banner Description is required";
-    if (!formData.fromDate) newErrors.fromDate = "From Date is required";
-    if (new Date(formData.fromDate) < minBookingDate) {
-      newErrors.fromDate = `From Date must be at least 1 days from today (${minBookingDate.toLocaleDateString()})`;
+
+    // Skip date validation if editing
+    if (!isEditing) {
+      const currentDate = new Date();
+      const minBookingDate = new Date();
+      minBookingDate.setDate(currentDate.getDate() + 1); // Adds 1 day to the current date
+      minBookingDate.setHours(0, 0, 0, 0); // Set to midnight for consistent comparison
+
+      if (!formData.fromDate) newErrors.fromDate = "From Date is required";
+      if (new Date(formData.fromDate) < minBookingDate) {
+        newErrors.fromDate = `From Date must be at least 1 day from today (${minBookingDate.toLocaleDateString()})`;
+      }
+      if (!formData.toDate) newErrors.toDate = "To Date is required";
+      if (new Date(formData.fromDate) > new Date(formData.toDate))
+        newErrors.toDate = "To Date must be after From Date";
     }
-    if (!formData.toDate) newErrors.toDate = "To Date is required";
-    if (new Date(formData.fromDate) > new Date(formData.toDate))
-      newErrors.toDate = "To Date must be after From Date";
+
     if (!formData.travelCompanion)
       newErrors.travelCompanion = "Travel Companion is required";
     if (!formData.budgetType) newErrors.budgetType = "Budget Type is required";
-    if (!formData.bannerImage)
+    if (!isEditing && !formData.bannerImage)
       newErrors.bannerImage = "Banner Image is required";
 
     if (Object.keys(newErrors).length > 0) {
@@ -133,7 +136,7 @@ const EditModal = ({
     console.log({ "Form submitted": isEditing, formData });
 
     let apiUrl = isEditing
-      ? `https://xplorionai-bryz7.ondigitalocean.app/admin/masters/home-page-banners/edit`
+      ? `https://xplorionai-bryz7.ondigitalocean.app/admin/masters/home-page-banners/update`
       : `https://xplorionai-bryz7.ondigitalocean.app/admin/masters/home-page-banners/add`;
 
     const submitFormData = new FormData();
@@ -145,9 +148,8 @@ const EditModal = ({
     submitFormData.append("toDate", formData.toDate);
     submitFormData.append("travelCompanion", formData.travelCompanion);
     submitFormData.append("budgetType", formData.budgetType);
-
     if (isEditing) {
-      submitFormData.append("_id", formData._id);
+      submitFormData.append("bannerId", formData._id);
     }
 
     try {
@@ -421,7 +423,7 @@ export default function BannerMaster() {
       _id: rowData._id,
       bannerTitle: rowData.banner_title,
       bannerDescription: rowData.banner_description,
-      bannerImage: `https://xplorionai-bryz7.ondigitalocean.app/banner-images/${rowData.banner_image}`,
+      bannerImage: rowData.banner_image,
       fromDate: rowData.fromDate,
       toDate: rowData.toDate,
       travelCompanion: rowData.travelCompanion,
@@ -480,18 +482,35 @@ export default function BannerMaster() {
     formData.append("bannerId", data._id);
     formData.append("statusFlag", data.status == 1 ? 0 : 1);
     console.log(Object.fromEntries(formData.entries()));
+
     try {
-      const response = await fetch(
+      const response = await axios.post(
         `${process.env.NEXT_PUBLIC_BASE_URL}/admin/masters/home-page-banners/update/status`,
+        formData,
         {
-          method: "POST",
-          body: formData,
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
         }
       );
-      const responseData = await response.json();
+
+      const responseData = response.data;
       console.log(responseData);
+
+      if (responseData.errFlag === 0) {
+        // Update the rowData state
+        setRowData((prevRowData) =>
+          prevRowData.map((row) =>
+            row._id === data._id
+              ? { ...row, status: data.status == 1 ? 0 : 1 }
+              : row
+          )
+        );
+      } else {
+        console.error("Error updating status:", responseData.message);
+      }
     } catch (error) {
-      console.error("Error toggling course status:", error);
+      console.error("Error toggling banner status:", error);
     }
   };
 
@@ -650,27 +669,80 @@ export default function BannerMaster() {
       headerName: "ACTION",
       field: "_id",
       filter: false,
-      maxWidth: 100,
+      maxWidth: 150,
       cellRenderer: (params) => (
-        <Button
-          size="xs"
-          colorScheme="blue"
-          onClick={() => {
-            handleEdit(params.data);
-          }}
-          borderRadius={"full"}
-          w={"36px"}
-          h={"36px"}
-          bgColor={"transparent"}
-          _hover={{ bgColor: "#f5f6f7" }}
-          border={"1px solid #626C70"}
-          mt={"4px"}
-        >
-          <FiEdit color={"#626C70"} size={"18px"} />
-        </Button>
+        <HStack spacing={2}>
+          <Button
+            size="xs"
+            colorScheme="blue"
+            onClick={() => {
+              handleEdit(params.data);
+            }}
+            borderRadius={"full"}
+            w={"36px"}
+            h={"36px"}
+            bgColor={"transparent"}
+            _hover={{ bgColor: "#f5f6f7" }}
+            border={"1px solid #626C70"}
+            mt={"4px"}
+          >
+            <FiEdit color={"#626C70"} size={"18px"} />
+          </Button>
+          <Button
+            size="xs"
+            colorScheme="red"
+            onClick={() => {
+              handleDelete(params.data._id);
+            }}
+            borderRadius={"full"}
+            w={"36px"}
+            h={"36px"}
+            bgColor={"transparent"}
+            _hover={{ bgColor: "#f5f6f7" }}
+            border={"1px solid #E84646"}
+            mt={"4px"}
+          >
+            <RiDeleteBin5Line color={"#E84646"} size={"18px"} />
+          </Button>
+        </HStack>
       ),
     },
   ];
+
+  // Function to handle delete operation
+  async function handleDelete(bannerId) {
+    if (!authToken) {
+      console.error("Auth token is missing");
+      return;
+    }
+
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this banner?"
+    );
+    if (!confirmDelete) return;
+
+    const formData = new FormData();
+    formData.append("token", authToken);
+    formData.append("bannerId", bannerId);
+
+    try {
+      const response = await axios.post(
+        "https://xplorionai-bryz7.ondigitalocean.app/admin/masters/home-page-banners/delete-banner",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      console.log("Delete response:", response.data);
+      fetchData(); // Refresh the grid data after deletion
+    } catch (error) {
+      console.error("Error deleting banner:", error.message);
+    }
+  }
+
   return (
     <>
       <Head>

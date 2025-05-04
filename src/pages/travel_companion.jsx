@@ -28,7 +28,7 @@ import useAuth from "@/components/useAuth";
 import { FiEdit } from "react-icons/fi";
 import { BsFillPlusCircleFill } from "react-icons/bs";
 import { GrGroup } from "react-icons/gr";
-
+import { RiDeleteBin5Line } from "react-icons/ri";
 
 export default function TravelCompanion() {
   const baseURL = process.env.NEXT_PUBLIC_BASE_URL;
@@ -40,7 +40,6 @@ export default function TravelCompanion() {
   const [editingRowIndex, setEditingRowIndex] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
-
 
   // Fetch data from the API
   const fetchCompanions = async () => {
@@ -66,44 +65,44 @@ export default function TravelCompanion() {
   }, [authToken]);
 
   // Function to toggle status
- 
-const toggleStatus = useCallback(
-  async (data) => {
-    // Get the new status after toggling
-    const newStatus = data.status === 1 ? 0 : 1;
 
-    // Update the state with the new status
-    setRowData((prevData) =>
-      prevData.map((row) =>
-        row._id === data._id ? { ...row, status: newStatus } : row
-      )
-    );
+  const toggleStatus = useCallback(
+    async (data) => {
+      // Get the new status after toggling
+      const newStatus = data.status === 1 ? 0 : 1;
 
-    // Prepare the form data for the POST request
-    const formData = new FormData();
-    formData.append("token", authToken);
-    formData.append("travelCompanionId", data._id);
-    formData.append("statusFlag", newStatus);
-
-    console.log(Object.fromEntries(formData));
-
-    try {
-      // Send the POST request
-      const response = await fetch(
-        `${baseURL}/app/masters/travel-companion/update/status`,
-        {
-          method: "POST",
-          body: formData,
-        }
+      // Update the state with the new status
+      setRowData((prevData) =>
+        prevData.map((row) =>
+          row._id === data._id ? { ...row, status: newStatus } : row
+        )
       );
 
-      console.log("Response:", response);
-    } catch (error) {
-      console.error("Error:", error);
-    }
-  },
-  [authToken, baseURL]
-);
+      // Prepare the form data for the POST request
+      const formData = new FormData();
+      formData.append("token", authToken);
+      formData.append("travelCompanionId", data._id);
+      formData.append("statusFlag", newStatus);
+
+      console.log(Object.fromEntries(formData));
+
+      try {
+        // Send the POST request
+        const response = await fetch(
+          `${baseURL}/app/masters/travel-companion/update/status`,
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
+
+        console.log("Response:", response);
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    },
+    [authToken, baseURL]
+  );
 
   // Handle form submission for adding or editing a companion
   const handleSubmit = async () => {
@@ -133,16 +132,15 @@ const toggleStatus = useCallback(
 
         // console.log(Object.fromEntries(form));
 
-       const response = await fetch(
-         `${baseURL}/app/masters/travel-companion/update`,
-         {
-           method: "POST",
-           body: form,
-         }
-       );
+        const response = await fetch(
+          `${baseURL}/app/masters/travel-companion/update`,
+          {
+            method: "POST",
+            body: form,
+          }
+        );
 
         // console.log(response);
-
       } else {
         console.log({ newCompanion });
 
@@ -212,16 +210,15 @@ const toggleStatus = useCallback(
             alt={params.data.travel_companion_name}
             style={{ width: "50px", height: "50px" }}
           />
-       
         ),
       },
       {
-        headerName: "EDIT",
-        field: "edit",
+        headerName: "ACTION",
+        field: "_id",
         maxWidth: 250,
         filter: false,
         cellRenderer: (params) => (
-          <>
+          <HStack spacing={2}>
             <Button
               size="xs"
               colorScheme="blue"
@@ -241,12 +238,66 @@ const toggleStatus = useCallback(
             >
               <FiEdit color={"#626C70"} size={"18px"} />
             </Button>
-          </>
+            <Button
+              size="xs"
+              colorScheme="red"
+              onClick={() => handleDeleteCompanion(params.data._id)}
+              borderRadius={"full"}
+              w={"36px"}
+              h={"36px"}
+              bgColor={"transparent"}
+              _hover={{ bgColor: "#f5f6f7" }}
+              border={"1px solid #E84646"}
+              mt={"4px"}
+            >
+              <RiDeleteBin5Line color={"#E84646"} size={"18px"} />
+            </Button>
+          </HStack>
         ),
       },
     ],
     [toggleStatus]
   );
+
+  // Function to handle deleting a travel companion
+  const handleDeleteCompanion = async (travelCompanionId) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this travel companion?"
+    );
+    if (!confirmDelete) return;
+
+    const formData = new FormData();
+    formData.append("token", authToken);
+    formData.append("travelCompanionId", travelCompanionId);
+
+    try {
+      const response = await axios.post(
+        `${baseURL}/app/masters/travel-companion/delete`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      console.log(response.data);
+
+      if (response.data.errFlag === 0) {
+        // Remove the deleted row from rowData
+        setRowData((prevData) =>
+          prevData.filter((row) => row._id !== travelCompanionId)
+        );
+      } else {
+        console.error(
+          "Error deleting travel companion:",
+          response.data.message
+        );
+      }
+    } catch (error) {
+      console.error("Error deleting travel companion:", error);
+    }
+  };
 
   return (
     <>

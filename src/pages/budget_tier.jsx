@@ -28,6 +28,7 @@ import useAuth from "@/components/useAuth";
 import { FiEdit } from "react-icons/fi";
 import { TbReceiptRupee } from "react-icons/tb";
 import { BsFillPlusCircleFill } from "react-icons/bs";
+import { RiDeleteBin5Line } from "react-icons/ri";
 import Image from "next/image";
 
 export default function BudgetTier() {
@@ -122,17 +123,17 @@ export default function BudgetTier() {
 
       console.log(response);
 
-     setRowData((prevData) =>
-       prevData.map((row) =>
-         row.id === budgetTierId
-           ? {
-               ...row,
-               budgetTier: newBudgetTier,
-               budget_tier_icon: budgetIconUrl,
-             } // Update both fields
-           : row
-       )
-     );
+      setRowData((prevData) =>
+        prevData.map((row) =>
+          row.id === budgetTierId
+            ? {
+                ...row,
+                budgetTier: newBudgetTier,
+                budget_tier_icon: budgetIconUrl,
+              } // Update both fields
+            : row
+        )
+      );
       resetForm();
     } catch (error) {
       console.error("Error editing budget tier:", error);
@@ -164,6 +165,43 @@ export default function BudgetTier() {
       resetForm();
     } catch (error) {
       console.error("Error adding budget tier:", error);
+    }
+  };
+
+  // Function to handle deleting a budget tier
+  const handleDeleteBudgetTier = async (budgetTierId) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this budget tier?"
+    );
+    if (!confirmDelete) return;
+
+    const formData = new FormData();
+    formData.append("token", authToken);
+    formData.append("budgetTierId", budgetTierId);
+
+    try {
+      const response = await axios.post(
+        `${baseURL}/app/masters/budget-tier/delete`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      console.log(response.data);
+
+      if (response.data.errFlag === 0) {
+        // Remove the deleted row from rowData
+        setRowData((prevData) =>
+          prevData.filter((row) => row.id !== budgetTierId)
+        );
+      } else {
+        console.error("Error deleting budget tier:", response.data.message);
+      }
+    } catch (error) {
+      console.error("Error deleting budget tier:", error);
     }
   };
 
@@ -223,12 +261,12 @@ export default function BudgetTier() {
         ),
       },
       {
-        headerName: "EDIT",
-        field: "edit",
+        headerName: "ACTION",
+        field: "_id",
         maxWidth: 250,
         cellRenderer: (params) => (
           // console.log(params.data),
-          <>
+          <HStack spacing={2}>
             <Button
               size="xs"
               colorScheme="blue"
@@ -248,7 +286,21 @@ export default function BudgetTier() {
             >
               <FiEdit color={"#626C70"} size={"18px"} />
             </Button>
-          </>
+            <Button
+              size="xs"
+              colorScheme="red"
+              onClick={() => handleDeleteBudgetTier(params.data.id)}
+              borderRadius={"full"}
+              w={"36px"}
+              h={"36px"}
+              bgColor={"transparent"}
+              _hover={{ bgColor: "#f5f6f7" }}
+              border={"1px solid #E84646"}
+              mt={"4px"}
+            >
+              <RiDeleteBin5Line color={"#E84646"} size={"18px"} />
+            </Button>
+          </HStack>
         ),
       },
     ],
