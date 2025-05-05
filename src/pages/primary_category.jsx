@@ -28,6 +28,7 @@ import styles from "../styles/primary_category.module.css";
 import { FiEdit } from "react-icons/fi";
 import { PiNotepad } from "react-icons/pi";
 import { BsFillPlusCircleFill } from "react-icons/bs";
+import { RiDeleteBin5Line } from "react-icons/ri";
 import useAuth from "@/components/useAuth";
 
 export default function PrimaryCategory() {
@@ -121,6 +122,45 @@ export default function PrimaryCategory() {
     }
   };
 
+  const handleDeleteCategory = async (primaryCategoryId) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this primary category?"
+    );
+    if (!confirmDelete) return;
+
+    const formData = new FormData();
+    formData.append("token", authToken);
+    formData.append("primaryCategoryId", primaryCategoryId);
+
+    try {
+      const response = await axios.post(
+        `${baseURL}/app/masters/primary-category/delete`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      console.log(response.data);
+
+      if (response.data.errFlag === 0) {
+        // Remove the deleted row from rowData
+        setRowData((prevData) =>
+          prevData.filter((row) => row._id !== primaryCategoryId)
+        );
+      } else {
+        console.error(
+          "Error deleting primary category:",
+          response.data.message
+        );
+      }
+    } catch (error) {
+      console.error("Error deleting primary category:", error);
+    }
+  };
+
   const onGridReady = (params) => {
     setGridApi(params.api);
   };
@@ -174,7 +214,7 @@ export default function PrimaryCategory() {
       field: "_id",
       filter: false,
       cellRenderer: (params) => (
-        <>
+        <HStack spacing={2}>
           <Button
             size="xs"
             colorScheme="blue"
@@ -193,7 +233,21 @@ export default function PrimaryCategory() {
           >
             <FiEdit color={"#626C70"} size={"18px"} />
           </Button>
-        </>
+          <Button
+            size="xs"
+            colorScheme="red"
+            onClick={() => handleDeleteCategory(params.data._id)}
+            borderRadius={"full"}
+            w={"36px"}
+            h={"36px"}
+            bgColor={"transparent"}
+            _hover={{ bgColor: "#f5f6f7" }}
+            border={"1px solid #E84646"}
+            mt={"4px"}
+          >
+            <RiDeleteBin5Line color={"#E84646"} size={"18px"} />
+          </Button>
+        </HStack>
       ),
     },
   ];

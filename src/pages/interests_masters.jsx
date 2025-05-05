@@ -366,7 +366,6 @@ export default function InterestsMasters() {
                     ) : (
                       item.sub_category_name
                     )}
-                    {/* Add Edit Icon */}
                   </Tag>
                   <Button
                     size="xs"
@@ -383,12 +382,23 @@ export default function InterestsMasters() {
                   >
                     <FiEdit3 size={"12px"} color={"#626C70"} />
                   </Button>
+                  <Button
+                    size="xs"
+                    ml={2}
+                    onClick={() =>
+                      handleDeleteSubCategory(item.sub_category_id)
+                    }
+                    bg={"white"}
+                    _hover={{ bg: "gray.100" }}
+                    border={"1px solid #E84646"}
+                  >
+                    <FiTrash2 size={"12px"} color={"#E84646"} />
+                  </Button>
                 </HStack>
               ))}
             </Box>
           );
         },
-
         flex: 3,
       },
       {
@@ -416,8 +426,43 @@ export default function InterestsMasters() {
         },
       },
     ],
-    [btnLoading, handleStatusChange, openEditModal, handleEdit]
+    [btnLoading, handleStatusChange, openEditModal]
   );
+
+  // Function to handle deleting a sub-category
+  const handleDeleteSubCategory = async (subCategoryId) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this sub-category?"
+    );
+    if (!confirmDelete) return;
+
+    const formData = new FormData();
+    formData.append("token", authToken);
+    formData.append("subCategoryId", subCategoryId);
+
+    try {
+      const response = await axios.post(
+        `${baseURL}/app/masters/sub-category/delete`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      console.log(response.data);
+
+      if (response.data.errFlag === 0) {
+        // Refresh the data after deletion
+        fetchData();
+      } else {
+        console.error("Error deleting sub-category:", response.data.message);
+      }
+    } catch (error) {
+      console.error("Error deleting sub-category:", error);
+    }
+  };
 
   return (
     <>
@@ -497,8 +542,11 @@ export default function InterestsMasters() {
                 domLayout="autoHeight"
                 getRowHeight={(params) => {
                   // console.log({ params });
-
-                  if (params?.data.sub_category_data.length > 1) {
+                  if (params?.data?.sub_category_data?.length > 20) {
+                    return params.data.sub_category_data.length * 35;
+                  } else if (params?.data?.sub_category_data?.length > 10) {
+                    return params.data.sub_category_data.length * 40;
+                  } else if (params?.data?.sub_category_data?.length > 1) {
                     return params.data.sub_category_data.length * 45;
                   } else {
                     return 80;
