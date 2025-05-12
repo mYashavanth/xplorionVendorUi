@@ -18,6 +18,7 @@ import { RxDashboard } from "react-icons/rx";
 import { IoLogOutOutline } from "react-icons/io5";
 import { PiUsersThreeThin, PiDiamondThin } from "react-icons/pi";
 import { RiArrowDropDownLine } from "react-icons/ri";
+import { TbDeviceDesktopAnalytics } from "react-icons/tb";
 
 import {
   HiOutlineClipboardDocumentList,
@@ -26,16 +27,15 @@ import {
 
 export default function NavBar() {
   const router = useRouter();
-   const [userName , setUserName] = useState("");
-   useEffect(() => {
-     const LogEmail = localStorage.getItem("name");
-     if (LogEmail) {
-       const extractedName = LogEmail.split("@")[0]; // Extracts the part before '@'
-       setUserName(extractedName);
-     }
-   }, []); // Runs only once when the component mounts
-  
-   
+  const [userName, setUserName] = useState("");
+  useEffect(() => {
+    const LogEmail = localStorage.getItem("name");
+    if (LogEmail) {
+      const extractedName = LogEmail.split("@")[0]; // Extracts the part before '@'
+      setUserName(extractedName);
+    }
+  }, []); // Runs only once when the component mounts
+
   const name = userName; // Change name to test
   const navBarRef = useRef(null);
   const path = router.pathname;
@@ -93,6 +93,32 @@ export default function NavBar() {
       name: "Banner Master",
       icon: HiOutlineSquaresPlus,
       path: "/banner_master",
+    },
+    {
+      group: "Analytics",
+      icon: TbDeviceDesktopAnalytics,
+      items: [
+        {
+          name: "Microsoft Clarity",
+          icon: PiDiamondThin,
+          action: () => {
+            window.open(
+              "https://clarity.microsoft.com/projects/view/ri7ug1xgjk/dashboard?date=Last%203%20days",
+              "_blank"
+            );
+          },
+        },
+        {
+          name: "Google Analytics",
+          icon: PiDiamondThin,
+          action: () => {
+            window.open(
+              "https://clarity.microsoft.com/projects/view/ri7ug1xgjk/dashboard?date=Last%203%20days",
+              "_blank"
+            );
+          },
+        },
+      ],
     },
     {
       name: "Logout",
@@ -234,16 +260,27 @@ function Dropdown({ group, icon, items, isGroupActive, isActive }) {
           align="flex-start"
           w="200px"
         >
-          {items.map((item) => (
-            <NavItem
-              key={item.name}
-              name={item.name}
-              icon={item.icon}
-              path={item.path}
-              isActive={isActive(item.path)}
-              boxSize={4}
-            />
-          ))}
+          {items.map((item) =>
+            item.path ? (
+              <NavItem
+                key={item.name}
+                name={item.name}
+                icon={item.icon}
+                path={item.path}
+                isActive={isActive(item.path)}
+                boxSize={4}
+              />
+            ) : (
+              <NavItem
+                key={item.name}
+                name={item.name}
+                icon={item.icon}
+                action={item.action}
+                isActive={false}
+                boxSize={4}
+              />
+            )
+          )}
         </VStack>
       )}
     </Box>
