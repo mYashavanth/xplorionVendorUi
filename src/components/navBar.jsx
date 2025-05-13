@@ -113,7 +113,7 @@ export default function NavBar() {
           icon: PiDiamondThin,
           action: () => {
             window.open(
-              "https://clarity.microsoft.com/projects/view/ri7ug1xgjk/dashboard?date=Last%203%20days",
+              "https://analytics.google.com/analytics/web/?authuser=0&hl=en#/p489000129/reports/dashboard?r=firebase-overview",
               "_blank"
             );
           },
