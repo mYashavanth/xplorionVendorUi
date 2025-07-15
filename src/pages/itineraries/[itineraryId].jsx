@@ -67,7 +67,7 @@ export default function Itinerary() {
   const [itineraryData, setItineraryData] = useState({});
   const [localFood, setLocalFood] = useState([]);
   const [holidays, setHolidays] = useState([]);
-  const [bestTimes , setBestTimes] = useState([]);
+  const [bestTimes, setBestTimes] = useState([]);
   const [tips, setTips] = useState([]);
   const [isDownloading, setIsDownloading] = useState(false);
   const navItemsData = [
@@ -258,10 +258,10 @@ export default function Itinerary() {
   async function fetchFoodData() {
     try {
       const res = await fetch(
-        `https://xplorionai-bryz7.ondigitalocean.app/food-drinks/$selectedPlace/${tempToken}`
+        `${baseURL}/get-all-food-drinks-admin/${itineraryId}/${authToken}`
       );
       const data = await res.json();
-      // console.log(data);
+      console.log({ "food and drinks": data });
       setLocalFood(data);
     } catch (error) {
       console.log(error.message);
@@ -271,52 +271,50 @@ export default function Itinerary() {
   async function fetchHolidays() {
     try {
       const res = await fetch(
-        `https://xplorionai-bryz7.ondigitalocean.app/national-holidays/$selectedPlace/${tempToken}`
+        `${baseURL}/get-all-national-holidays-admin/${itineraryId}/${authToken}`
       );
       const data = await res.json();
-      // console.log(data);
+      console.log({ "national holidays": data });
       setHolidays(data);
     } catch (error) {
       console.log(error.message);
     }
   }
 
-  async function fetchBestTimes(){
+  async function fetchBestTimes() {
     try {
       const res = await fetch(
-      `https://xplorionai-bryz7.ondigitalocean.app/best-time-to-visit-place/$selectedPlace/${tempToken}`
-    )
+        `${baseURL}/get-all-best-time-to-visit/${itineraryId}/${authToken}`
+      );
 
-    const data = await res.json();
-    console.log(data);
-    setBestTimes(data);
+      const data = await res.json();
+      console.log({ "best times": data });
+      // setBestTimes(data);
     } catch (error) {
       console.log(error.message);
     }
   }
 
-  async function fetchTips(){
-    try { 
+  async function fetchTips() {
+    try {
       const res = await fetch(
-        ` https://xplorionai-bryz7.ondigitalocean.app/tips-for-place/$selectedPlace/${tempToken}`
-      )
-    const data = await res.json();
-    console.log(data);
-    setTips(data);
-  } catch (error) {
-    console.log(error.message);
+        `${baseURL}/get-all-tips/${itineraryId}/${authToken}`
+      );
+      const data = await res.json();
+      console.log({ "tips data": data });
+      // setTips(data);
+    } catch (error) {
+      console.log(error.message);
+    }
   }
-
-}
-
 
   useEffect(() => {
     if (!authToken || !itineraryId) return;
     fetchData();
-    // fetchFoodData();
-    // fetchHolidays();
-    // fetchBestTimes();
-    // fetchTips();
+    fetchFoodData();
+    fetchHolidays();
+    fetchBestTimes();
+    fetchTips();
   }, [authToken, itineraryId]);
 
   // console.log({ itineraryData, numberOfDays });
