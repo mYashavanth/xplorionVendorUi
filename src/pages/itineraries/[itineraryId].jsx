@@ -57,7 +57,6 @@ export default function Itinerary() {
   // console.log({ itineraryId });
   const baseURL = process.env.NEXT_PUBLIC_BASE_URL;
   const authToken = useAuth(baseURL);
-  const tempToken = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyVG9rZW4iOiJ0ZXN0MTIzQGdtYWlsLmNvbS02NzYzZTFjODM1YWI2ZjVhY2RkYjBmYzEtMjAyNTAzMTcxNDEzMDEifQ.C3aigJ3pW5Is-_Z3Con-TM8G_w6IVuUp7u-Kd-bQGPI`;
 
   const headerRef = useRef(null);
   const navRef = useRef(null);
@@ -74,9 +73,9 @@ export default function Itinerary() {
     { id: "localFood", name: "Local Food", icon: IoFastFoodOutline },
     { id: "nationalHolidays", name: "National holidays", icon: TbBeach },
     { id: "bestTimes", name: "Best time to visit", icon: IoMdTime },
-    { id: "importantInfo", name: "Important information", icon: TiInfoOutline },
+    // { id: "importantInfo", name: "Important information", icon: TiInfoOutline },
     { id: "tips", name: "Tips", icon: MdOutlineTipsAndUpdates },
-    { id: "packingList", name: "Packing list", icon: GoChecklist },
+    // { id: "packingList", name: "Packing list", icon: GoChecklist },
   ];
 
   // Calculate combined height and set CSS variable
@@ -261,8 +260,11 @@ export default function Itinerary() {
         `${baseURL}/get-all-food-drinks-admin/${itineraryId}/${authToken}`
       );
       const data = await res.json();
-      console.log({ "food and drinks": data });
-      setLocalFood(data);
+      console.log({
+        "food and drinks": data,
+        api: `${baseURL}/get-all-food-drinks-admin/${itineraryId}/${authToken}`,
+      });
+      setLocalFood(data[0]?.foodAndDrinkJsonData || []);
     } catch (error) {
       console.log(error.message);
     }
@@ -274,8 +276,11 @@ export default function Itinerary() {
         `${baseURL}/get-all-national-holidays-admin/${itineraryId}/${authToken}`
       );
       const data = await res.json();
-      console.log({ "national holidays": data });
-      setHolidays(data);
+      console.log({
+        "national holidays": data,
+        api: `${baseURL}/get-all-national-holidays-admin/${itineraryId}/${authToken}`,
+      });
+      setHolidays(data[0]?.nationalHolidaysJsonData || []);
     } catch (error) {
       console.log(error.message);
     }
@@ -284,12 +289,15 @@ export default function Itinerary() {
   async function fetchBestTimes() {
     try {
       const res = await fetch(
-        `${baseURL}/get-all-best-time-to-visit/${itineraryId}/${authToken}`
+        `${baseURL}/get-all-best-time-to-visit-admin/${itineraryId}/${authToken}`
       );
 
       const data = await res.json();
-      console.log({ "best times": data });
-      // setBestTimes(data);
+      console.log({
+        "best times": data,
+        api: `${baseURL}/get-all-best-time-to-visit-admin/${itineraryId}/${authToken}`,
+      });
+      setBestTimes(data[0]?.bestTimeToVisitJsonData || []);
     } catch (error) {
       console.log(error.message);
     }
@@ -298,11 +306,14 @@ export default function Itinerary() {
   async function fetchTips() {
     try {
       const res = await fetch(
-        `${baseURL}/get-all-tips/${itineraryId}/${authToken}`
+        `${baseURL}/get-all-tips-admin/${itineraryId}/${authToken}`
       );
       const data = await res.json();
-      console.log({ "tips data": data });
-      // setTips(data);
+      console.log({
+        "tips data": data,
+        api: `${baseURL}/get-all-tips-admin/${itineraryId}/${authToken}`,
+      });
+      setTips(data[0]?.tipsJsonData || []);
     } catch (error) {
       console.log(error.message);
     }
