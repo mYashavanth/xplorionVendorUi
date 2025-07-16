@@ -193,7 +193,7 @@ export default function CityList() {
         headerName: "STATUS",
         field: "status",
         filter: false,
-        sortable: false,
+        // sortable: false,
         cellRenderer: (params) => (
           <Tag
             colorScheme={params.value === 1 ? "green" : "red"}
@@ -295,8 +295,8 @@ export default function CityList() {
                 rowData={rowData}
                 columnDefs={columnDefs}
                 pagination={true}
-                paginationPageSize={5}
-                paginationPageSizeSelector={[5, 10, 15]}
+                paginationPageSize={50}
+                paginationPageSizeSelector={[50, 100, 150]}
                 enableCellTextSelection={true}
                 defaultColDef={{
                   sortable: true,

@@ -224,6 +224,7 @@ export default function TravelCompanion() {
               colorScheme="blue"
               onClick={() => {
                 setNewCompanion(params.data.travel_companion_name);
+                setCompanionUrl(params.data.travel_companion_icon_link);
                 setIsEditing(true);
                 setEditingRowIndex(params.node.rowIndex);
                 onOpen(); // Open the modal

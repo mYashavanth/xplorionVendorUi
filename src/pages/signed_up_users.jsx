@@ -157,6 +157,7 @@ export default function SignedUpUsers() {
       { field: "username", headerName: "USERNAME" },
       { field: "email", headerName: "EMAIL" },
       { field: "created_date", headerName: "CREATED DATE" },
+      { field: "created_time", headerName: "CREATED TIME" },
       {
         headerName: "ACTION",
         field: "_id",
