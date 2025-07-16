@@ -357,7 +357,7 @@ export default function Itinerary() {
                 <CiCalendar />
                 <Text>{numberOfDays} days</Text>
               </HStack>
-              <HStack>
+              {/* <HStack>
                 {["Sightseeing", "Food and wine", "Nightlife", "Hiking"].map(
                   (tag, index) => (
                     <Tag
@@ -377,7 +377,7 @@ export default function Itinerary() {
                     </Tag>
                   )
                 )}
-              </HStack>
+              </HStack> */}
             </HStack>
           </VStack>
           <Spacer />
