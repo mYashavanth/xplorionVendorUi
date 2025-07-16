@@ -53,11 +53,27 @@ export default function CityList() {
         const response = await axios.get(
           `https://xplorionai-bryz7.ondigitalocean.app/app/masters/city/all/${authToken}`
         );
-        setRowData(response.data);
-        setLoading(false);
+
+        // Log raw response (for debugging)
+        console.log("Raw API response:", response.data);
+
+        // If response.data is a string (unlikely with axios), parse it safely
+        let data =
+          typeof response.data === "string"
+            ? JSON.parse(response.data.replace(/"\w+": NaN/g, '"status": null'))
+            : response.data;
+
+        // Deep clean NaN values (if response.data is already an object)
+        const cleanData = JSON.parse(
+          JSON.stringify(data, (key, value) =>
+            typeof value === "number" && isNaN(value) ? null : value
+          )
+        );
+
+        console.log("Cleaned data:", cleanData);
+        setRowData(cleanData);
       } catch (error) {
         console.error("Error fetching data:", error);
-        setLoading(false);
       } finally {
         setLoading(false);
       }
