@@ -182,7 +182,6 @@ export default function ItineraryList() {
         <title>Itinerary List</title>
       </Head>
       <main className={styles.main}>
-        
         <Box>
           {/* Ag-Grid Section */}
           <Box
@@ -193,8 +192,8 @@ export default function ItineraryList() {
               rowData={rowData}
               columnDefs={columnDefs}
               pagination={true}
-              paginationPageSize={5}
-              paginationPageSizeSelector={[5, 10, 15]}
+              paginationPageSize={10}
+              paginationPageSizeSelector={[10, 25, 50]}
               enableCellTextSelection={true}
               defaultColDef={{
                 sortable: true,
