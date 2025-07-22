@@ -82,6 +82,11 @@ export default function NavBar() {
           icon: PiDiamondThin,
           path: "/travel_companion",
         },
+        {
+          name: "Activity Config",
+          icon: PiDiamondThin,
+          path: "/activity_config",
+        },
       ],
     },
     {

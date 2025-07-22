@@ -324,7 +324,11 @@ export default function TravelCompanion() {
           </Box>
         ) : (
           <Box w={"100%"} h={"auto"} className="gridContainer">
-            <HStack bgColor={"white"} p={"24px"}>
+            <HStack
+              bgColor={"white"}
+              p={"24px"}
+              borderRadius={"8px 8px 0px 0px"}
+            >
               <HStack gap={"12px"} alignItems={"center"}>
                 <GrGroup color={"#888888"} size={24} />
                 <Heading

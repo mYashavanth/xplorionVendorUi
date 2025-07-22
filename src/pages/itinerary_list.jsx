@@ -11,6 +11,11 @@ import {
   ModalBody,
   ModalCloseButton,
   useDisclosure,
+  HStack,
+  Heading,
+  Spacer,
+  Skeleton,
+  SkeletonText,
 } from "@chakra-ui/react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
@@ -19,6 +24,9 @@ import Head from "next/head";
 import axios from "axios";
 import useAuth from "@/components/useAuth";
 import { useRouter } from "next/router";
+import { GrGroup } from "react-icons/gr";
+import { BsFillPlusCircleFill } from "react-icons/bs";
+import { HiOutlineClipboardDocumentList } from "react-icons/hi2";
 
 export default function ItineraryList() {
   const router = useRouter();
@@ -27,10 +35,12 @@ export default function ItineraryList() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [interests, setInterests] = useState([]);
   const [rowData, setRowData] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   // Sample data for the ag-Grid
 
   async function fetchData() {
+    setLoading(true);
     try {
       const response = await axios.get(
         `${baseURL}/app/masters/itinerary-requests/all/${authToken}`
@@ -43,6 +53,8 @@ export default function ItineraryList() {
       setRowData(formatedData);
     } catch (error) {
       console.log(error.message);
+    } finally {
+      setLoading(false);
     }
   }
   useEffect(() => {
@@ -182,62 +194,98 @@ export default function ItineraryList() {
         <title>Itinerary List</title>
       </Head>
       <main className={styles.main}>
-        <Box>
-          {/* Ag-Grid Section */}
-          <Box
-            className="ag-theme-quartz"
-            style={{ height: 400, width: "100%" }}
-          >
-            <AgGridReact
-              rowData={rowData}
-              columnDefs={columnDefs}
-              pagination={true}
-              paginationPageSize={10}
-              paginationPageSizeSelector={[10, 25, 50]}
-              enableCellTextSelection={true}
-              defaultColDef={{
-                sortable: true,
-                filter: true,
-                floatingFilter: true,
-                resizable: true,
-                flex: 1,
-                filterParams: {
-                  debounceMs: 0,
-                  buttons: ["reset"],
-                },
-              }}
-              domLayout="autoHeight"
-              getRowHeight={(params) => {
-                return 80;
-              }}
-            />
+        {loading ? (
+          <Box w={"100%"} h={"auto"} className="gridContainer">
+            <HStack bgColor={"white"} p={"24px"}>
+              <HStack gap={"12px"} alignItems={"center"}>
+                <Skeleton height="24px" width="24px" borderRadius="full" />
+                <SkeletonText noOfLines={1} width="200px" />
+              </HStack>
+              <Spacer />
+              <Skeleton height="40px" width="160px" borderRadius="md" />
+            </HStack>
+            <Skeleton height="60px" width="100%" mt={4} />
+            <Skeleton height="60px" width="100%" mt={2} />
+            <Skeleton height="60px" width="100%" mt={2} />
+            <Skeleton height="60px" width="100%" mt={2} />
+            <Skeleton height="60px" width="100%" mt={2} />
           </Box>
+        ) : (
+          <Box w={"100%"} h={"auto"} className="gridContainer">
+            <HStack
+              bgColor={"white"}
+              p={"24px"}
+              borderRadius={"8px 8px 0px 0px"}
+            >
+              <HStack gap={"12px"} alignItems={"center"}>
+                <HiOutlineClipboardDocumentList color={"#888888"} size={24} />
+                <Heading
+                  fontSize={"20px"}
+                  fontWeight={600}
+                  className="gridContainer"
+                >
+                  Itineraries Generated
+                </Heading>
+              </HStack>
+            </HStack>
+            <Box>
+              {/* Ag-Grid Section */}
+              <Box
+                className="ag-theme-quartz"
+                style={{ height: 400, width: "100%" }}
+              >
+                <AgGridReact
+                  rowData={rowData}
+                  columnDefs={columnDefs}
+                  pagination={true}
+                  paginationPageSize={10}
+                  paginationPageSizeSelector={[10, 25, 50]}
+                  enableCellTextSelection={true}
+                  defaultColDef={{
+                    sortable: true,
+                    filter: true,
+                    floatingFilter: true,
+                    resizable: true,
+                    flex: 1,
+                    filterParams: {
+                      debounceMs: 0,
+                      buttons: ["reset"],
+                    },
+                  }}
+                  domLayout="autoHeight"
+                  getRowHeight={(params) => {
+                    return 80;
+                  }}
+                />
+              </Box>
+            </Box>
+          </Box>
+        )}
 
-          {/* Chakra UI Modal */}
-          <Modal isOpen={isOpen} onClose={onClose}>
-            <ModalOverlay />
-            <ModalContent>
-              <ModalHeader>Interests</ModalHeader>
-              <ModalCloseButton />
-              <ModalBody>
-                {interests.length > 0 ? (
-                  interests.map((interest, index) => (
-                    <Box key={index} mb={2}>
-                      {interest}
-                    </Box>
-                  ))
-                ) : (
-                  <Box>No interests available</Box>
-                )}
-              </ModalBody>
-              <ModalFooter>
-                <Button colorScheme="blue" onClick={onClose}>
-                  Close
-                </Button>
-              </ModalFooter>
-            </ModalContent>
-          </Modal>
-        </Box>
+        {/* Chakra UI Modal */}
+        <Modal isOpen={isOpen} onClose={onClose}>
+          <ModalOverlay />
+          <ModalContent>
+            <ModalHeader>Interests</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>
+              {interests.length > 0 ? (
+                interests.map((interest, index) => (
+                  <Box key={index} mb={2}>
+                    {interest}
+                  </Box>
+                ))
+              ) : (
+                <Box>No interests available</Box>
+              )}
+            </ModalBody>
+            <ModalFooter>
+              <Button colorScheme="blue" onClick={onClose}>
+                Close
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
       </main>
     </>
   );

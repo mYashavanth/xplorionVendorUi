@@ -33,20 +33,18 @@ import axios from "axios";
 import useAuth from "@/components/useAuth";
 import Image from "next/image";
 
-
 export default function Home() {
   const gridApiRef = useRef(null);
-  const [userName , setUserName] = useState("");
- useEffect(() => {
-   const LogEmail = localStorage.getItem("name");
-   if (LogEmail) {
-     const extractedName = LogEmail.split("@")[0]; // Extracts the part before '@'
-     setUserName(extractedName);
-   }
- }, []); // Runs only once when the component mounts
+  const [userName, setUserName] = useState("");
+  useEffect(() => {
+    const LogEmail = localStorage.getItem("name");
+    if (LogEmail) {
+      const extractedName = LogEmail.split("@")[0]; // Extracts the part before '@'
+      setUserName(extractedName);
+    }
+  }, []); // Runs only once when the component mounts
 
- console.log(userName); 
-
+  console.log(userName);
 
   // const router = useRouter();
   // const baseURL = process.env.NEXT_PUBLIC_BASE_URL;
@@ -219,173 +217,166 @@ export default function Home() {
   //   [rowData, columnDefs]
   // );
 
+  // new area
 
+  const router = useRouter();
+  const baseURL = process.env.NEXT_PUBLIC_BASE_URL;
+  const authToken = useAuth(baseURL);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [interests, setInterests] = useState([]);
+  const [rowData, setRowData] = useState([]);
+  const [dataLen, setDataLen] = useState(0);
+  const [serachLoc, setSerachLoc] = useState(0);
 
-  // new area 
+  // Sample data for the ag-Grid
 
-   const router = useRouter();
-   const baseURL = process.env.NEXT_PUBLIC_BASE_URL;
-   const authToken = useAuth(baseURL);
-   const { isOpen, onOpen, onClose } = useDisclosure();
-   const [interests, setInterests] = useState([]);
-   const [rowData, setRowData] = useState([]);
-   const [dataLen, setDataLen] = useState(0);
-   const [serachLoc , setSerachLoc] = useState(0);
-
-   // Sample data for the ag-Grid
-
-   async function fetchData() {
-     try {
-       const response = await axios.get(
-         `${baseURL}/app/masters/itinerary-requests/all/${authToken}`
-       );
-       console.log(response.data);
-       const locations = response.data.map((item) => item.cityStateCountry);
-       const uniqueLocations = Array.from(new Set(locations));
+  async function fetchData() {
+    try {
+      const response = await axios.get(
+        `${baseURL}/app/masters/itinerary-requests/all/${authToken}`
+      );
+      console.log(response.data);
+      const locations = response.data.map((item) => item.cityStateCountry);
+      const uniqueLocations = Array.from(new Set(locations));
       //  console.log(uniqueLocations.length);
-       setSerachLoc(uniqueLocations.length);
-       setDataLen(response.data.length);
-       let formatedData = response.data.map((item, index) => ({
-         index: index + 1,
-         ...item,
-       }));
-       setRowData(formatedData);
-     } catch (error) {
-       console.log(error.message);
-     }
-   }
-   useEffect(() => {
-     if (!authToken) return;
-     fetchData();
-   }, [authToken]);
+      setSerachLoc(uniqueLocations.length);
+      setDataLen(response.data.length);
+      let formatedData = response.data.map((item, index) => ({
+        index: index + 1,
+        ...item,
+      }));
+      setRowData(formatedData);
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
+  useEffect(() => {
+    if (!authToken) return;
+    fetchData();
+  }, [authToken]);
 
-   const handleAction = useCallback(
-     (params) => {
-       console.log("Redirect to details page for:", params.data._id);
-       // Add routing logic here
-       // nvigate to the page inineraries which have a dynamic routing for itineraryId
+  const handleAction = useCallback(
+    (params) => {
+      console.log("Redirect to details page for:", params.data._id);
+      // Add routing logic here
+      // nvigate to the page inineraries which have a dynamic routing for itineraryId
 
-       router.push(`/itineraries/${params.data._id}`);
-     },
-     [router]
-   );
+      router.push(`/itineraries/${params.data._id}`);
+    },
+    [router]
+  );
 
-   const handleViewInterests = useCallback(
-     (interests) => {
-       setInterests(interests.split(","));
-       onOpen(); // Open the modal
-     },
-     [onOpen]
-   );
-   // Columns definition for ag-Grid
-   const columnDefs = useMemo(
-     () => [
-       {
-         headerName: "SL",
-         field: "index",
-         width: 80,
-         flex: false,
-         filter: false,
-         sortable: false,
-         suppressHeaderMenuButton: true,
-       },
-       { headerName: "ITENARY ID", field: "_id", minWidth: 250 },
-       //  { headerName: "USERNAME & EMAIL", field: "username" },
-       { headerName: "Time", field: "createdTime", minWidth: 150 },
-       {
-         headerName: "CREATED DATE & TIME",
-         field: "createdDate",
-         filter: "agDateColumnFilter",
-         cellRenderer: (params) => {
-           const date = params.data.createdDate;
+  const handleViewInterests = useCallback(
+    (interests) => {
+      setInterests(interests.split(","));
+      onOpen(); // Open the modal
+    },
+    [onOpen]
+  );
+  // Columns definition for ag-Grid
+  const columnDefs = useMemo(
+    () => [
+      {
+        headerName: "SL",
+        field: "index",
+        width: 80,
+        flex: false,
+        filter: false,
+        sortable: false,
+        suppressHeaderMenuButton: true,
+      },
+      { headerName: "ITENARY ID", field: "_id", minWidth: 250 },
+      //  { headerName: "USERNAME & EMAIL", field: "username" },
+      { headerName: "Time", field: "createdTime", minWidth: 150 },
+      {
+        headerName: "CREATED DATE & TIME",
+        field: "createdDate",
+        filter: "agDateColumnFilter",
+        cellRenderer: (params) => {
+          const date = params.data.createdDate;
           //  const time = params.data.createdTime;
-           // Use <br> for a line break between date and time
-           return (
-             <div>
-               <div>{date}</div>
-               {/* <div>{time}</div> */}
-             </div>
-           );
-         },
-         filter: "agDateColumnFilter",
-         filterParams: {
-           comparator: (filterLocalDateAtMidnight, cellValue) => {
-             console.log({
-               filterLocalDateAtMidnight,
-               cellValue,
-             });
+          // Use <br> for a line break between date and time
+          return (
+            <div>
+              <div>{date}</div>
+              {/* <div>{time}</div> */}
+            </div>
+          );
+        },
+        filter: "agDateColumnFilter",
+        filterParams: {
+          comparator: (filterLocalDateAtMidnight, cellValue) => {
+            console.log({
+              filterLocalDateAtMidnight,
+              cellValue,
+            });
 
-             const dateParts = cellValue.split("-");
-             const year = Number(dateParts[0]);
-             const month = Number(dateParts[1]) - 1;
-             const day = Number(dateParts[2]);
-             const cellDate = new Date(year, month, day);
+            const dateParts = cellValue.split("-");
+            const year = Number(dateParts[0]);
+            const month = Number(dateParts[1]) - 1;
+            const day = Number(dateParts[2]);
+            const cellDate = new Date(year, month, day);
 
-             if (cellDate < filterLocalDateAtMidnight) {
-               return -1;
-             } else if (cellDate > filterLocalDateAtMidnight) {
-               return 1;
-             } else {
-               return 0;
-             }
-           },
-         },
-       },
-       { headerName: "CITY", field: "cityStateCountry" },
-       {
-         headerName: "INTERESTS",
-         field: "interests",
-         filter: false,
-         sortable: false,
-         maxWidth: 170,
-         cellRenderer: (params) => (
-           <Button
-             border={"1px solid #0099FF"}
-             color="#0099FF"
-             bg={"white"}
-             size="sm"
-             _hover={{
-               boxShadow: "xl",
-             }}
-             onClick={() =>
-               handleViewInterests(params.data.primaryCategorySubCategoryData)
-             }
-           >
-             View Interests
-           </Button>
-         ),
-       },
-       {
-         headerName: "ACTION",
-         field: "action",
-         filter: false,
-         sortable: false,
-         maxWidth: 100,
-         cellRenderer: (params) => (
-           <Button
-             bgGradient={"linear(to-r, #0099FF, #54AB6A)"}
-             color="white"
-             size="sm"
-             onClick={() => handleAction(params)}
-             _hover={{
-               bgGradient: "linear(to-r, #0099FF, #54AB6A)",
-               boxShadow: "xl",
-             }}
-           >
-             View
-           </Button>
-         ),
-       },
-     ],
-     [handleViewInterests]
-   );
+            if (cellDate < filterLocalDateAtMidnight) {
+              return -1;
+            } else if (cellDate > filterLocalDateAtMidnight) {
+              return 1;
+            } else {
+              return 0;
+            }
+          },
+        },
+      },
+      { headerName: "CITY", field: "cityStateCountry" },
+      {
+        headerName: "INTERESTS",
+        field: "interests",
+        filter: false,
+        sortable: false,
+        maxWidth: 170,
+        cellRenderer: (params) => (
+          <Button
+            border={"1px solid #0099FF"}
+            color="#0099FF"
+            bg={"white"}
+            size="sm"
+            _hover={{
+              boxShadow: "xl",
+            }}
+            onClick={() =>
+              handleViewInterests(params.data.primaryCategorySubCategoryData)
+            }
+          >
+            View Interests
+          </Button>
+        ),
+      },
+      {
+        headerName: "ACTION",
+        field: "action",
+        filter: false,
+        sortable: false,
+        maxWidth: 100,
+        cellRenderer: (params) => (
+          <Button
+            bgGradient={"linear(to-r, #0099FF, #54AB6A)"}
+            color="white"
+            size="sm"
+            onClick={() => handleAction(params)}
+            _hover={{
+              bgGradient: "linear(to-r, #0099FF, #54AB6A)",
+              boxShadow: "xl",
+            }}
+          >
+            View
+          </Button>
+        ),
+      },
+    ],
+    [handleViewInterests]
+  );
 
-
-
-
-
-  // new end 
-
+  // new end
 
   const detailsContentArr = [
     {
@@ -468,6 +459,7 @@ export default function Home() {
             gap={"12px"}
             alignItems={"center"}
             bgColor={"white"}
+            borderRadius={"8px 8px 0px 0px"}
           >
             <PiNotepad color={"#888888"} size={24} />
             <Heading
