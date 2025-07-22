@@ -230,10 +230,7 @@ export default function ItineraryList() {
             </HStack>
             <Box>
               {/* Ag-Grid Section */}
-              <Box
-                className="ag-theme-quartz"
-                style={{ height: 400, width: "100%" }}
-              >
+              <Box className="ag-theme-quartz" w={"100%"} h={"auto"}>
                 <AgGridReact
                   rowData={rowData}
                   columnDefs={columnDefs}
