@@ -16,8 +16,11 @@ import {
 } from "@chakra-ui/react";
 import Head from "next/head";
 import styles from "../styles/activity_config.module.css";
+import useAuth from "@/components/useAuth";
 
 export default function ActivityConfig() {
+  const baseURL = process.env.NEXT_PUBLIC_BASE_URL;
+  const authToken = useAuth(baseURL);
   const [formData, setFormData] = useState({
     totalItinerary: "",
     noOfRedo: "",
@@ -26,6 +29,7 @@ export default function ActivityConfig() {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const toast = useToast();
+  console.log(authToken);
 
   const handleChange = (name, value) => {
     setFormData((prev) => ({
