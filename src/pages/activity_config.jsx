@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -17,19 +17,55 @@ import {
 import Head from "next/head";
 import styles from "../styles/activity_config.module.css";
 import useAuth from "@/components/useAuth";
+import axios from "axios";
 
 export default function ActivityConfig() {
   const baseURL = process.env.NEXT_PUBLIC_BASE_URL;
   const authToken = useAuth(baseURL);
   const [formData, setFormData] = useState({
-    totalItinerary: "",
-    noOfRedo: "",
-    noOfSimilarActivity: "",
+    iternaryNo: "",
+    similerResturants: "",
+    activityRedo: "",
+    dayRedo: "",
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const toast = useToast();
-  console.log(authToken);
+
+  useEffect(() => {
+    if (authToken) {
+      fetchConfigData();
+    }
+  }, [authToken]);
+
+  const fetchConfigData = async () => {
+    try {
+      const response = await axios.get(
+        `${baseURL}/global-config/all/${authToken}`
+      );
+      const configData = response.data[0] || {};
+      console.log("Fetched Config Data:", configData);
+
+      setFormData({
+        iternaryNo: configData.iternaryNo || "",
+        similerResturants: configData.similerRestNo || "",
+        activityRedo: configData.activityRedoNo || "",
+        dayRedo: configData.dayRedoNo || "",
+      });
+    } catch (error) {
+      console.error("Error fetching config data:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load configuration data",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleChange = (name, value) => {
     setFormData((prev) => ({
@@ -48,45 +84,68 @@ export default function ActivityConfig() {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.totalItinerary) {
-      newErrors.totalItinerary = "Total itinerary is required";
-    } else if (isNaN(formData.totalItinerary) || formData.totalItinerary <= 0) {
-      newErrors.totalItinerary = "Must be a positive number";
+    if (!formData.iternaryNo) {
+      newErrors.iternaryNo = "Total itinerary is required";
+    } else if (isNaN(formData.iternaryNo) || formData.iternaryNo <= 0) {
+      newErrors.iternaryNo = "Must be a positive number";
     }
 
-    if (!formData.noOfRedo) {
-      newErrors.noOfRedo = "Number of redo is required";
-    } else if (isNaN(formData.noOfRedo) || formData.noOfRedo < 0) {
-      newErrors.noOfRedo = "Must be a non-negative number";
+    if (!formData.dayRedo) {
+      newErrors.dayRedo = "Number of day redo is required";
+    } else if (isNaN(formData.dayRedo) || formData.dayRedo < 0) {
+      newErrors.dayRedo = "Must be a non-negative number";
     }
 
-    if (!formData.noOfSimilarActivity) {
-      newErrors.noOfSimilarActivity =
-        "Number of similar activities is required";
+    if (!formData.activityRedo) {
+      newErrors.activityRedo = "Number of activity redo is required";
+    } else if (isNaN(formData.activityRedo) || formData.activityRedo < 0) {
+      newErrors.activityRedo = "Must be a non-negative number";
+    }
+
+    if (!formData.similerResturants) {
+      newErrors.similerResturants = "Number of similar restaurants is required";
     } else if (
-      isNaN(formData.noOfSimilarActivity) ||
-      formData.noOfSimilarActivity < 0
+      isNaN(formData.similerResturants) ||
+      formData.similerResturants < 0
     ) {
-      newErrors.noOfSimilarActivity = "Must be a non-negative number";
+      newErrors.similerResturants = "Must be a non-negative number";
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (validateForm()) {
       setIsSubmitting(true);
 
-      // Simulate API call
-      setTimeout(() => {
-        console.log("Form submitted:", {
-          totalItinerary: Number(formData.totalItinerary),
-          noOfRedo: Number(formData.noOfRedo),
-          noOfSimilarActivity: Number(formData.noOfSimilarActivity),
+      try {
+        const uploadData = new FormData();
+        uploadData.append("iternaryNo", Number(formData.iternaryNo));
+        uploadData.append(
+          "similerResturants",
+          Number(formData.similerResturants)
+        );
+        uploadData.append("activityRedo", Number(formData.activityRedo));
+        uploadData.append("dayRedo", Number(formData.dayRedo));
+        uploadData.append("token", authToken);
+
+        console.log("Submitting Form Data:", {
+          iternaryNo: formData.iternaryNo,
+          similerResturants: formData.similerResturants,
+          activityRedo: formData.activityRedo,
+          dayRedo: formData.dayRedo,
+          token: authToken,
         });
+
+        const response = await axios.post(
+          `${baseURL}/global-config/iternary`,
+          uploadData
+        );
+
+        console.log("API Response:", response.data);
 
         toast({
           title: "Configuration saved",
@@ -96,11 +155,26 @@ export default function ActivityConfig() {
           duration: 5000,
           isClosable: true,
         });
+      } catch (error) {
+        console.error("API Error:", error.response?.data || error.message);
 
+        toast({
+          title: "Error",
+          description:
+            error.response?.data?.message || "Failed to save configuration",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+      } finally {
         setIsSubmitting(false);
-      }, 1000);
+      }
     }
   };
+
+  // if (isLoading) {
+  //   return <div>Loading...</div>;
+  // }
 
   return (
     <>
@@ -114,13 +188,13 @@ export default function ActivityConfig() {
           </Heading>
 
           <Box as="form" onSubmit={handleSubmit}>
-            <FormControl isInvalid={!!errors.totalItinerary} mb={6}>
+            <FormControl isInvalid={!!errors.iternaryNo} mb={6}>
               <FormLabel>Total Itinerary Per User</FormLabel>
               <NumberInput
                 min={1}
-                value={formData.totalItinerary}
+                value={formData.iternaryNo}
                 onChange={(valueString) =>
-                  handleChange("totalItinerary", valueString)
+                  handleChange("iternaryNo", valueString)
                 }
               >
                 <NumberInputField placeholder="Enter total itinerary" />
@@ -129,34 +203,50 @@ export default function ActivityConfig() {
                   <NumberDecrementStepper />
                 </NumberInputStepper>
               </NumberInput>
-              <FormErrorMessage>{errors.totalItinerary}</FormErrorMessage>
+              <FormErrorMessage>{errors.iternaryNo}</FormErrorMessage>
             </FormControl>
 
-            <FormControl isInvalid={!!errors.noOfRedo} mb={6}>
-              <FormLabel>Number of Redo</FormLabel>
+            <FormControl isInvalid={!!errors.dayRedo} mb={6}>
+              <FormLabel>Number of Day Redo</FormLabel>
               <NumberInput
                 min={0}
-                value={formData.noOfRedo}
-                onChange={(valueString) =>
-                  handleChange("noOfRedo", valueString)
-                }
+                value={formData.dayRedo}
+                onChange={(valueString) => handleChange("dayRedo", valueString)}
               >
-                <NumberInputField placeholder="Enter number of redo attempts" />
+                <NumberInputField placeholder="Enter number of day redo attempts" />
                 <NumberInputStepper>
                   <NumberIncrementStepper />
                   <NumberDecrementStepper />
                 </NumberInputStepper>
               </NumberInput>
-              <FormErrorMessage>{errors.noOfRedo}</FormErrorMessage>
+              <FormErrorMessage>{errors.dayRedo}</FormErrorMessage>
             </FormControl>
 
-            <FormControl isInvalid={!!errors.noOfSimilarActivity} mb={8}>
+            <FormControl isInvalid={!!errors.activityRedo} mb={6}>
+              <FormLabel>Number of Activity Redo</FormLabel>
+              <NumberInput
+                min={0}
+                value={formData.activityRedo}
+                onChange={(valueString) =>
+                  handleChange("activityRedo", valueString)
+                }
+              >
+                <NumberInputField placeholder="Enter number of activity redo attempts" />
+                <NumberInputStepper>
+                  <NumberIncrementStepper />
+                  <NumberDecrementStepper />
+                </NumberInputStepper>
+              </NumberInput>
+              <FormErrorMessage>{errors.activityRedo}</FormErrorMessage>
+            </FormControl>
+
+            <FormControl isInvalid={!!errors.similerResturants} mb={8}>
               <FormLabel>Number of Similar Activities</FormLabel>
               <NumberInput
                 min={0}
-                value={formData.noOfSimilarActivity}
+                value={formData.similerResturants}
                 onChange={(valueString) =>
-                  handleChange("noOfSimilarActivity", valueString)
+                  handleChange("similerResturants", valueString)
                 }
               >
                 <NumberInputField placeholder="Enter number of similar activities" />
@@ -165,7 +255,7 @@ export default function ActivityConfig() {
                   <NumberDecrementStepper />
                 </NumberInputStepper>
               </NumberInput>
-              <FormErrorMessage>{errors.noOfSimilarActivity}</FormErrorMessage>
+              <FormErrorMessage>{errors.similerResturants}</FormErrorMessage>
             </FormControl>
 
             <Button
