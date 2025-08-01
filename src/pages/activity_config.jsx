@@ -49,7 +49,7 @@ export default function ActivityConfig() {
 
       setFormData({
         iternaryNo: configData.iternaryNo || "",
-        similerResturants: configData.similerRestNo || "",
+        similerResturants: configData.similerPlacesLimitNo || "",
         activityRedo: configData.activityRedoNo || "",
         dayRedo: configData.dayRedoNo || "",
       });
@@ -124,17 +124,14 @@ export default function ActivityConfig() {
       try {
         const uploadData = new FormData();
         uploadData.append("iternaryNo", Number(formData.iternaryNo));
-        uploadData.append(
-          "similerResturants",
-          Number(formData.similerResturants)
-        );
+        uploadData.append("similerPlaces", Number(formData.similerResturants));
         uploadData.append("activityRedo", Number(formData.activityRedo));
         uploadData.append("dayRedo", Number(formData.dayRedo));
         uploadData.append("token", authToken);
 
         console.log("Submitting Form Data:", {
           iternaryNo: formData.iternaryNo,
-          similerResturants: formData.similerResturants,
+          similerPlaces: formData.similerResturants,
           activityRedo: formData.activityRedo,
           dayRedo: formData.dayRedo,
           token: authToken,
