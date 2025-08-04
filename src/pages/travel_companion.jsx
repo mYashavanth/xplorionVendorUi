@@ -163,6 +163,44 @@ export default function TravelCompanion() {
     }
   };
 
+  const StatusCellRenderer = (params) => {
+    const isActive = params.value === 1;
+    const [isLoading, setIsLoading] = useState(false);
+    const [isDisabled, setIsDisabled] = useState(false);
+
+    const handleStatus = async () => {
+      if (isDisabled) return;
+
+      setIsDisabled(true);
+      setIsLoading(true);
+
+      try {
+        await toggleStatus(params.data);
+      } catch (error) {
+        console.error("Error updating status:", error);
+      } finally {
+        setIsLoading(false);
+        // Re-enable after a short delay to prevent rapid clicks
+        setTimeout(() => setIsDisabled(false), 1000);
+      }
+    };
+
+    return (
+      <HStack spacing={2}>
+        <Switch
+          colorScheme="green"
+          isChecked={isActive}
+          onChange={handleStatus}
+          isDisabled={isDisabled}
+          isLoading={isLoading}
+          size="md"
+        />
+        <Text color={isActive ? "green.500" : "red.500"} fontWeight="medium">
+          {isActive ? "Active" : "Inactive"}
+        </Text>
+      </HStack>
+    );
+  };
   // Column Definitions
   const columnDefs = useMemo(
     () => [
@@ -198,47 +236,7 @@ export default function TravelCompanion() {
         headerName: "STATUS",
         field: "status",
         filter: false,
-        cellRenderer: (params) => {
-          const isActive = params.value === 1;
-          const [isLoading, setIsLoading] = useState(false);
-          const [isDisabled, setIsDisabled] = useState(false);
-
-          const handleStatus = async () => {
-            if (isDisabled) return;
-
-            setIsDisabled(true);
-            setIsLoading(true);
-
-            try {
-              await toggleStatus(params.data);
-            } catch (error) {
-              console.error("Error updating status:", error);
-            } finally {
-              setIsLoading(false);
-              // Re-enable after a short delay to prevent rapid clicks
-              setTimeout(() => setIsDisabled(false), 1000);
-            }
-          };
-
-          return (
-            <HStack spacing={2}>
-              <Switch
-                colorScheme="green"
-                isChecked={isActive}
-                onChange={handleStatus}
-                isDisabled={isDisabled}
-                isLoading={isLoading}
-                size="md"
-              />
-              <Text
-                color={isActive ? "green.500" : "red.500"}
-                fontWeight="medium"
-              >
-                {isActive ? "Active" : "Inactive"}
-              </Text>
-            </HStack>
-          );
-        },
+        cellRenderer: StatusCellRenderer,
       },
       {
         headerName: "ACTION",
