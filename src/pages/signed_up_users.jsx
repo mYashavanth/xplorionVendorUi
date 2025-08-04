@@ -27,6 +27,7 @@ import {
   FormLabel,
   Stack,
   useToast,
+  Switch,
 } from "@chakra-ui/react";
 import axios from "axios";
 import { AgGridReact } from "ag-grid-react";
@@ -41,7 +42,7 @@ export default function SignedUpUsers() {
   const router = useRouter();
   const [rowData, setRowData] = useState([]);
   const [gridApi, setGridApi] = useState(null);
-  const [btnLoading, setBtnLoading] = useState({});
+  // const [btnLoading, setBtnLoading] = useState({});
   const [loading, setLoading] = useState({ fetch: true });
   const baseURL = process.env.NEXT_PUBLIC_BASE_URL;
   const authToken = useAuth(baseURL);
@@ -182,12 +183,11 @@ export default function SignedUpUsers() {
       formData.append("status", newStatus);
 
       try {
-        setBtnLoading((prev) => ({ ...prev, [userId]: true }));
         const response = await axios.post(
           `${baseURL}/app/system-users/appuser-update-status`,
           formData
         );
-
+        console.log("Status updated:", response.data);
         setRowData((prevData) => {
           return prevData.map((item) => {
             if (item._id === userId) {
@@ -196,10 +196,10 @@ export default function SignedUpUsers() {
             return item;
           });
         });
+        return true; // Indicate success
       } catch (error) {
         console.error("Error updating status:", error.message);
-      } finally {
-        setBtnLoading((prev) => ({ ...prev, [userId]: false }));
+        return false; // Indicate failure
       }
     },
     [authToken, baseURL]
@@ -231,16 +231,43 @@ export default function SignedUpUsers() {
         filter: false,
         cellRenderer: (params) => {
           const isActive = params.value === 1;
+          const [isLoading, setIsLoading] = useState(false);
+          const [isDisabled, setIsDisabled] = useState(false);
+
+          const handleStatusChange = async () => {
+            if (isDisabled) return;
+
+            setIsDisabled(true);
+            setIsLoading(true);
+
+            try {
+              await updateToken(params.data._id, isActive ? 0 : 1);
+            } catch (error) {
+              console.error("Error updating status:", error);
+            } finally {
+              setIsLoading(false);
+              // Re-enable after a short delay to prevent rapid clicks
+              setTimeout(() => setIsDisabled(false), 1000);
+            }
+          };
+
           return (
-            <Button
-              size="sm"
-              onClick={() => updateToken(params.data._id, isActive ? 0 : 1)}
-              isLoading={btnLoading[params.data._id]}
-              colorScheme={isActive ? "green" : "red"}
-              variant="solid"
-            >
-              {isActive ? "Active" : "Inactive"}
-            </Button>
+            <HStack spacing={2}>
+              <Switch
+                colorScheme="green"
+                isChecked={isActive}
+                onChange={handleStatusChange}
+                isDisabled={isDisabled}
+                isLoading={isLoading}
+                size="md"
+              />
+              <Text
+                color={isActive ? "green.500" : "red.500"}
+                fontWeight="medium"
+              >
+                {isActive ? "Active" : "Inactive"}
+              </Text>
+            </HStack>
           );
         },
       },
@@ -281,7 +308,7 @@ export default function SignedUpUsers() {
         ),
       },
     ],
-    [btnLoading, handleFetchSubCategories, updateToken]
+    [handleFetchSubCategories, updateToken]
   );
 
   return (

@@ -17,6 +17,8 @@ import {
   filter,
   Skeleton,
   SkeletonText,
+  Switch,
+  Text,
 } from "@chakra-ui/react";
 import axios from "axios";
 import { AgGridReact } from "ag-grid-react";
@@ -40,7 +42,7 @@ export default function PrimaryCategory() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const baseURL = process.env.NEXT_PUBLIC_BASE_URL;
   const authToken = useAuth(baseURL);
-  const [btnLoading, setBtnLoading] = useState({});
+  // const [btnLoading, setBtnLoading] = useState({});
   const [loading, setLoading] = useState({ fetch: true });
 
   const fetchPrimaryCategories = useCallback(async () => {
@@ -104,21 +106,19 @@ export default function PrimaryCategory() {
 
   const handleStatusChange = async (categoryId, status) => {
     try {
-      setBtnLoading((prev) => ({ ...prev, [categoryId]: true }));
       const formData = new FormData();
       formData.append("primaryCategoryId", categoryId);
       formData.append("status", status);
       formData.append("token", authToken);
 
-      await axios.post(
+      let response = await axios.post(
         `${baseURL}/app/masters/primary-category/update/status`,
         formData
       );
+      console.log("Status update response:", response.data);
       fetchPrimaryCategories();
     } catch (error) {
       console.error("Error updating status:", error);
-    } finally {
-      setBtnLoading((prev) => ({ ...prev, [categoryId]: false }));
     }
   };
 
@@ -196,18 +196,50 @@ export default function PrimaryCategory() {
       headerName: "STATUS",
       field: "status",
       filter: false,
-      cellRenderer: (params) => (
-        <Button
-          size="sm"
-          colorScheme={params.value === 1 ? "green" : "red"}
-          onClick={() =>
-            handleStatusChange(params.data._id, params.value === 1 ? 0 : 1)
+      cellRenderer: (params) => {
+        const isActive = params.value === 1;
+        const [isLoading, setIsLoading] = useState(false);
+        const [isDisabled, setIsDisabled] = useState(false);
+
+        const handleStatus = async () => {
+          if (isDisabled) return;
+
+          setIsDisabled(true);
+          setIsLoading(true);
+
+          try {
+            await handleStatusChange(
+              params.data._id,
+              params.value === 1 ? 0 : 1
+            );
+          } catch (error) {
+            console.error("Error updating status:", error);
+          } finally {
+            setIsLoading(false);
+            // Re-enable after a short delay to prevent rapid clicks
+            setTimeout(() => setIsDisabled(false), 1000);
           }
-          isLoading={btnLoading[params.data._id]}
-        >
-          {params.value === 1 ? "Active" : "Inactive"}
-        </Button>
-      ),
+        };
+
+        return (
+          <HStack spacing={2}>
+            <Switch
+              colorScheme="green"
+              isChecked={isActive}
+              onChange={handleStatus}
+              isDisabled={isDisabled}
+              isLoading={isLoading}
+              size="md"
+            />
+            <Text
+              color={isActive ? "green.500" : "red.500"}
+              fontWeight="medium"
+            >
+              {isActive ? "Active" : "Inactive"}
+            </Text>
+          </HStack>
+        );
+      },
     },
     {
       headerName: "ACTION",

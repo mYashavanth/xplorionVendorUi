@@ -18,6 +18,8 @@ import {
   Spacer,
   Skeleton,
   SkeletonText,
+  Switch,
+  Text,
 } from "@chakra-ui/react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
@@ -73,14 +75,11 @@ export default function BudgetTier() {
 
   // Function to toggle status
   const toggleStatus = useCallback(
-    async (rowIndex) => {
-      const updatedRow = rowData[rowIndex];
-      const newStatus = updatedRow.status === 1 ? 0 : 1;
-
+    async (rowData) => {
       const form = new FormData();
       form.append("token", authToken);
-      form.append("budgetTierId", updatedRow.id);
-      form.append("statusFlag", newStatus);
+      form.append("budgetTierId", rowData.id);
+      form.append("statusFlag", rowData.status === 1 ? 0 : 1);
 
       try {
         const response = await axios.post(
@@ -90,8 +89,10 @@ export default function BudgetTier() {
 
         console.log(response);
         setRowData((prevData) =>
-          prevData.map((row, index) =>
-            index === rowIndex ? { ...row, status: newStatus } : row
+          prevData.map((row) =>
+            row.id === rowData.id
+              ? { ...row, status: row.status === 1 ? 0 : 1 } // Toggle status
+              : row
           )
         );
       } catch (error) {
@@ -247,18 +248,49 @@ export default function BudgetTier() {
       {
         headerName: "STATUS",
         field: "status",
-        maxWidth: 250,
-        cellRenderer: (params) => (
-          // console.log(params.data),
-          <Tag
-            colorScheme={params.value === 1 ? "green" : "red"}
-            onClick={() => toggleStatus(params.node.rowIndex)}
-            cursor="pointer"
-            mt={2}
-          >
-            {params.value === 1 ? "Active" : "Inactive"}
-          </Tag>
-        ),
+        filter: false,
+        cellRenderer: (params) => {
+          // console.log(params.data);
+          const isActive = params.value === 1;
+          const [isLoading, setIsLoading] = useState(false);
+          const [isDisabled, setIsDisabled] = useState(false);
+
+          const handleStatus = async () => {
+            if (isDisabled) return;
+
+            setIsDisabled(true);
+            setIsLoading(true);
+
+            try {
+              await toggleStatus(params.data);
+            } catch (error) {
+              console.error("Error updating status:", error);
+            } finally {
+              setIsLoading(false);
+              // Re-enable after a short delay to prevent rapid clicks
+              setTimeout(() => setIsDisabled(false), 1000);
+            }
+          };
+
+          return (
+            <HStack spacing={2}>
+              <Switch
+                colorScheme="green"
+                isChecked={isActive}
+                onChange={handleStatus}
+                isDisabled={isDisabled}
+                isLoading={isLoading}
+                size="md"
+              />
+              <Text
+                color={isActive ? "green.500" : "red.500"}
+                fontWeight="medium"
+              >
+                {isActive ? "Active" : "Inactive"}
+              </Text>
+            </HStack>
+          );
+        },
       },
       {
         headerName: "ACTION",
