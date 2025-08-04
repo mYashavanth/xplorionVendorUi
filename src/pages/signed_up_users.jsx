@@ -18,6 +18,15 @@ import {
   ModalBody,
   ModalFooter,
   Text,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
+  NumberIncrementStepper,
+  NumberDecrementStepper,
+  FormControl,
+  FormLabel,
+  Stack,
+  useToast,
 } from "@chakra-ui/react";
 import axios from "axios";
 import { AgGridReact } from "ag-grid-react";
@@ -36,41 +45,44 @@ export default function SignedUpUsers() {
   const [loading, setLoading] = useState({ fetch: true });
   const baseURL = process.env.NEXT_PUBLIC_BASE_URL;
   const authToken = useAuth(baseURL);
-  const [subCategories, setSubCategories] = useState([]); // Holds the sub-category names for the modal
-  const [fetchedDataCache, setFetchedDataCache] = useState({}); // Cache for storing fetched data per app_user_id
-  const { isOpen, onOpen, onClose } = useDisclosure(); // Controls modal visibility
-  const [subCatLoading, setSubCatLoading] = useState(false); // Loading state for API call
+  const [subCategories, setSubCategories] = useState([]);
+  const [fetchedDataCache, setFetchedDataCache] = useState({});
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [subCatLoading, setSubCatLoading] = useState(false);
+  const toast = useToast();
+
+  // State for itinerary limit modal
+  const {
+    isOpen: isLimitModalOpen,
+    onOpen: onLimitModalOpen,
+    onClose: onLimitModalClose,
+  } = useDisclosure();
+  const [currentUserId, setCurrentUserId] = useState(null);
+  const [limitLoading, setLimitLoading] = useState(false);
+  const [itineraryLimits, setItineraryLimits] = useState({
+    itineraryNo: 0,
+    activityRedo: 0,
+    dayRedo: 0,
+    similerPlaces: 0,
+  });
 
   const handleFetchSubCategories = useCallback(
     async (app_user_id) => {
       if (fetchedDataCache[app_user_id]) {
-        // If data is already in the cache, use it
         setSubCategories(fetchedDataCache[app_user_id]);
         onOpen();
       } else {
-        // If data is not in cache, fetch from API
         setSubCatLoading(true);
-
         try {
           const response = await axios.get(
             `https://xplorionai-bryz7.ondigitalocean.app/app/super-admin/interests/${authToken}/${app_user_id}`
           );
-
-          // Extracting sub-category names from the response
-          // const fetchedSubCategories = response.data.map(
-          //   (item) => item.interest_details[0].sub_category_name
-          // );
-          // Updating the cache with the fetched data
           setFetchedDataCache((prevCache) => ({
             ...prevCache,
             [app_user_id]: response.data,
           }));
-
           setSubCategories(response.data);
-          console.log({ responseData: response.data });
-          // if(response.data.){
-
-          onOpen(); // Open the modal once data is fetched
+          onOpen();
         } catch (error) {
           console.error("Error fetching sub-categories:", error);
         } finally {
@@ -81,6 +93,64 @@ export default function SignedUpUsers() {
     [fetchedDataCache, onOpen, authToken]
   );
 
+  // Open itinerary limit modal and set current user ID
+  const handleOpenLimitModal = (userId) => {
+    setCurrentUserId(userId);
+    onLimitModalOpen();
+  };
+
+  // Handle itinerary limit changes
+  const handleLimitChange = (field, value) => {
+    setItineraryLimits((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  // Submit itinerary limits to backend
+  const handleSubmitLimits = async () => {
+    if (!currentUserId || !authToken) return;
+
+    setLimitLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append("iternaryNo", -Math.abs(itineraryLimits.itineraryNo));
+      formData.append("activityRedo", -Math.abs(itineraryLimits.activityRedo));
+      formData.append("dayRedo", -Math.abs(itineraryLimits.dayRedo));
+      formData.append(
+        "similerPlaces",
+        -Math.abs(itineraryLimits.similerPlaces)
+      );
+      formData.append("token", authToken);
+      formData.append("appUserId", currentUserId);
+
+      console.log(
+        "Submitting itinerary limits:",
+        Object.fromEntries(formData.entries())
+      );
+
+      let response = await axios.post(
+        `${baseURL}/iternary-config/app-users`,
+        formData
+      );
+      console.log("Itinerary limits updated:", response.data);
+
+      toast({
+        title: "Success",
+        description: "Itinerary limits updated successfully",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+
+      onLimitModalClose();
+    } catch (error) {
+      console.error("Error updating itinerary limits:", error);
+    } finally {
+      setLimitLoading(false);
+    }
+  };
+
   const fetchUserData = useCallback(async () => {
     if (!authToken) return;
 
@@ -90,7 +160,6 @@ export default function SignedUpUsers() {
         `${baseURL}/app/super-admin/app-users/all/${authToken}`
       );
       setRowData(response.data);
-      console.log({ response, data: response.data });
     } catch (error) {
       console.error("Error fetching data:", error.message);
     } finally {
@@ -118,9 +187,7 @@ export default function SignedUpUsers() {
           `${baseURL}/app/system-users/appuser-update-status`,
           formData
         );
-        console.log({ response, data: response.data, newStatus, userId });
 
-        // fetchUserData(); // Refresh the data
         setRowData((prevData) => {
           return prevData.map((item) => {
             if (item._id === userId) {
@@ -135,7 +202,7 @@ export default function SignedUpUsers() {
         setBtnLoading((prev) => ({ ...prev, [userId]: false }));
       }
     },
-    [authToken, baseURL, fetchUserData]
+    [authToken, baseURL]
   );
 
   const columnDefs = useMemo(
@@ -159,26 +226,6 @@ export default function SignedUpUsers() {
       { field: "created_date", headerName: "CREATED DATE" },
       { field: "created_time", headerName: "CREATED TIME" },
       {
-        headerName: "ACTION",
-        field: "_id",
-        filter: false,
-        sortable: false,
-        cellRenderer: (params) => (
-          <Button
-            border={"1px solid #0099FF"}
-            color="#0099FF"
-            bg={"white"}
-            size="sm"
-            _hover={{
-              boxShadow: "xl",
-            }}
-            onClick={() => handleFetchSubCategories(params.value)}
-          >
-            View Interest
-          </Button>
-        ),
-      },
-      {
         headerName: "STATUS",
         field: "status",
         filter: false,
@@ -186,6 +233,7 @@ export default function SignedUpUsers() {
           const isActive = params.value === 1;
           return (
             <Button
+              size="sm"
               onClick={() => updateToken(params.data._id, isActive ? 0 : 1)}
               isLoading={btnLoading[params.data._id]}
               colorScheme={isActive ? "green" : "red"}
@@ -195,6 +243,42 @@ export default function SignedUpUsers() {
             </Button>
           );
         },
+      },
+      {
+        headerName: "ACTION",
+        field: "_id",
+        filter: false,
+        sortable: false,
+        width: 200,
+        minWidth: 200,
+        cellRenderer: (params) => (
+          <HStack spacing={2} mt={1}>
+            <Button
+              bgGradient={"linear(to-r, #0099FF, #54AB6A)"}
+              color="white"
+              size="sm"
+              _hover={{
+                bgGradient: "linear(to-r, #0099FF, #54AB6A)",
+                boxShadow: "xl",
+              }}
+              onClick={() => handleOpenLimitModal(params.value)}
+            >
+              Set Limits
+            </Button>
+            <Button
+              border={"1px solid #0099FF"}
+              color="#0099FF"
+              bg={"white"}
+              size="sm"
+              _hover={{
+                boxShadow: "xl",
+              }}
+              onClick={() => handleFetchSubCategories(params.value)}
+            >
+              Interests
+            </Button>
+          </HStack>
+        ),
       },
     ],
     [btnLoading, handleFetchSubCategories, updateToken]
@@ -220,7 +304,6 @@ export default function SignedUpUsers() {
                 <SkeletonText noOfLines={1} width="200px" />
               </HStack>
               <Spacer />
-              {/* <Skeleton height="40px" width="160px" borderRadius="md" /> */}
             </HStack>
             <Skeleton height="60px" width="100%" mt={4} />
             <Skeleton height="60px" width="100%" mt={2} />
@@ -272,6 +355,8 @@ export default function SignedUpUsers() {
             />
           </Box>
         )}
+
+        {/* Sub-Categories Modal */}
         <Modal isOpen={isOpen} onClose={onClose}>
           <ModalOverlay />
           <ModalContent>
@@ -291,6 +376,96 @@ export default function SignedUpUsers() {
             <ModalFooter>
               <Button colorScheme="blue" mr={3} onClick={onClose}>
                 Close
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
+
+        {/* Itinerary Limits Modal */}
+        <Modal isOpen={isLimitModalOpen} onClose={onLimitModalClose}>
+          <ModalOverlay />
+          <ModalContent>
+            <ModalHeader>Set Itinerary Limits</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>
+              <Stack spacing={4}>
+                <FormControl>
+                  <FormLabel>Itinerary Number</FormLabel>
+                  <NumberInput
+                    min={1}
+                    value={itineraryLimits.itineraryNo}
+                    onChange={(value) =>
+                      handleLimitChange("itineraryNo", value)
+                    }
+                  >
+                    <NumberInputField />
+                    <NumberInputStepper>
+                      <NumberIncrementStepper />
+                      <NumberDecrementStepper />
+                    </NumberInputStepper>
+                  </NumberInput>
+                </FormControl>
+
+                <FormControl>
+                  <FormLabel>Activity Redo Limit</FormLabel>
+                  <NumberInput
+                    min={1}
+                    value={itineraryLimits.activityRedo}
+                    onChange={(value) =>
+                      handleLimitChange("activityRedo", value)
+                    }
+                  >
+                    <NumberInputField />
+                    <NumberInputStepper>
+                      <NumberIncrementStepper />
+                      <NumberDecrementStepper />
+                    </NumberInputStepper>
+                  </NumberInput>
+                </FormControl>
+
+                <FormControl>
+                  <FormLabel>Day Redo Limit</FormLabel>
+                  <NumberInput
+                    min={1}
+                    value={itineraryLimits.dayRedo}
+                    onChange={(value) => handleLimitChange("dayRedo", value)}
+                  >
+                    <NumberInputField />
+                    <NumberInputStepper>
+                      <NumberIncrementStepper />
+                      <NumberDecrementStepper />
+                    </NumberInputStepper>
+                  </NumberInput>
+                </FormControl>
+
+                <FormControl>
+                  <FormLabel>Similar Places Limit</FormLabel>
+                  <NumberInput
+                    min={1}
+                    value={itineraryLimits.similerPlaces}
+                    onChange={(value) =>
+                      handleLimitChange("similerPlaces", value)
+                    }
+                  >
+                    <NumberInputField />
+                    <NumberInputStepper>
+                      <NumberIncrementStepper />
+                      <NumberDecrementStepper />
+                    </NumberInputStepper>
+                  </NumberInput>
+                </FormControl>
+              </Stack>
+            </ModalBody>
+            <ModalFooter>
+              <Button variant="ghost" mr={3} onClick={onLimitModalClose}>
+                Cancel
+              </Button>
+              <Button
+                colorScheme="blue"
+                onClick={handleSubmitLimits}
+                isLoading={limitLoading}
+              >
+                Save Limits
               </Button>
             </ModalFooter>
           </ModalContent>
