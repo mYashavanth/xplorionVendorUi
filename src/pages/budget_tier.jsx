@@ -304,6 +304,7 @@ export default function BudgetTier() {
               onClick={() => {
                 setNewBudgetTier(params.data.budgetTier);
                 setBudgetTierId(params.data.id);
+                setbudgetIconUrl(params.data.budget_tier_icon);
                 setIsEditing(true);
                 onOpen();
               }}
@@ -385,6 +386,7 @@ export default function BudgetTier() {
                 gap={"8px"}
                 onClick={() => {
                   setNewBudgetTier("");
+                  setbudgetIconUrl("");
                   setIsEditing(false);
                   onOpen();
                 }}
@@ -424,22 +426,28 @@ export default function BudgetTier() {
         )}
 
         {/* Modal for adding or editing a budget tier */}
-        <Modal isOpen={isOpen} onClose={resetForm}>
-          <ModalOverlay />
-          <ModalContent>
-            <ModalHeader>
+        <Modal isOpen={isOpen} onClose={resetForm} isCentered>
+          <ModalOverlay zIndex={1000} />
+          <ModalContent maxWidth={"512px"}>
+            <ModalHeader borderBottom={"1px solid #E5E7EB"} p={"20px 34px"}>
               {isEditing ? "Edit Budget Tier" : "Add New Budget Tier"}
             </ModalHeader>
-            <ModalCloseButton />
-            <ModalBody>
+            <ModalCloseButton
+              borderRadius={"full"}
+              bgColor={"#F5F6F7"}
+              _hover={{ bgColor: "#E5E7EB" }}
+              w={"40px"}
+              h={"40px"}
+              m={"8px 24px 0 0"}
+            />
+            <ModalBody p={"20px 34px 100px"} bgColor={"#f5f6f7"}>
               <Input
                 placeholder="Enter Budget Tier"
                 value={newBudgetTier}
                 onChange={(e) => setNewBudgetTier(e.target.value)}
+                mb={2}
               />
-            </ModalBody>
 
-            <ModalBody>
               <Input
                 placeholder="Enter Companion Icon URL"
                 value={budgetIconUrl}
@@ -448,15 +456,20 @@ export default function BudgetTier() {
             </ModalBody>
 
             <ModalFooter>
-              <Button
-                colorScheme="blue"
-                mr={3}
-                onClick={isEditing ? handleEditBudgetTier : handleAddBudgetTier}
-              >
-                {isEditing ? "Edit" : "Add"}
-              </Button>
               <Button variant="ghost" onClick={resetForm}>
                 Cancel
+              </Button>
+              <Button
+                bgGradient={"linear(to-r, #0099FF, #54AB6A)"}
+                _hover={{
+                  bgGradient: "linear(to-r, #0099FF, #54AB6A)",
+                  boxShadow: "lg",
+                }}
+                color="white"
+                ml={3}
+                onClick={isEditing ? handleEditBudgetTier : handleAddBudgetTier}
+              >
+                {isEditing ? "Save Changes" : "Add"}
               </Button>
             </ModalFooter>
           </ModalContent>

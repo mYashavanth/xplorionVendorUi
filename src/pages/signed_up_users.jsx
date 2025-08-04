@@ -409,12 +409,21 @@ export default function SignedUpUsers() {
         </Modal>
 
         {/* Itinerary Limits Modal */}
-        <Modal isOpen={isLimitModalOpen} onClose={onLimitModalClose}>
-          <ModalOverlay />
-          <ModalContent>
-            <ModalHeader>Set Itinerary Limits</ModalHeader>
-            <ModalCloseButton />
-            <ModalBody>
+        <Modal isOpen={isLimitModalOpen} onClose={onLimitModalClose} isCentered>
+          <ModalOverlay zIndex={1000} />
+          <ModalContent maxWidth={"512px"}>
+            <ModalHeader borderBottom={"1px solid #E5E7EB"} p={"20px 34px"}>
+              Set Itinerary Limits
+            </ModalHeader>
+            <ModalCloseButton
+              borderRadius={"full"}
+              bgColor={"#F5F6F7"}
+              _hover={{ bgColor: "#E5E7EB" }}
+              w={"40px"}
+              h={"40px"}
+              m={"8px 24px 0 0"}
+            />
+            <ModalBody p={"20px 34px 100px"} bgColor={"#f5f6f7"}>
               <Stack spacing={4}>
                 <FormControl>
                   <FormLabel>Itinerary Number</FormLabel>
@@ -488,7 +497,13 @@ export default function SignedUpUsers() {
                 Cancel
               </Button>
               <Button
-                colorScheme="blue"
+                bgGradient={"linear(to-r, #0099FF, #54AB6A)"}
+                _hover={{
+                  bgGradient: "linear(to-r, #0099FF, #54AB6A)",
+                  boxShadow: "lg",
+                }}
+                color="white"
+                ml={3}
                 onClick={handleSubmitLimits}
                 isLoading={limitLoading}
               >

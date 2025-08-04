@@ -522,7 +522,7 @@ export default function InterestsMasters() {
                   gap={"8px"}
                 >
                   <BsFillPlusCircleFill size={22} />
-                  Add New
+                  Add New Interest
                 </Button>
               </HStack>
               <AgGridReact

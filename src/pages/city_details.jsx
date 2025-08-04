@@ -350,14 +350,21 @@ export default function CityList() {
         )}
 
         {/* Modal for adding or editing a city */}
-        <Modal isOpen={isOpen} onClose={resetForm}>
-          <ModalOverlay />
-          <ModalContent>
-            <ModalHeader>
+        <Modal isOpen={isOpen} onClose={resetForm} isCentered>
+          <ModalOverlay zIndex={1000} />
+          <ModalContent maxWidth={"512px"}>
+            <ModalHeader borderBottom={"1px solid #E5E7EB"} p={"20px 34px"}>
               {isEditing ? "Edit City" : "Add New City"}
             </ModalHeader>
-            <ModalCloseButton />
-            <ModalBody>
+            <ModalCloseButton
+              borderRadius={"full"}
+              bgColor={"#F5F6F7"}
+              _hover={{ bgColor: "#E5E7EB" }}
+              w={"40px"}
+              h={"40px"}
+              m={"8px 24px 0 0"}
+            />
+            <ModalBody p={"20px 34px 100px"} bgColor={"#f5f6f7"}>
               <Input
                 placeholder="City"
                 value={cityData.city}
@@ -383,11 +390,20 @@ export default function CityList() {
               />
             </ModalBody>
             <ModalFooter>
-              <Button colorScheme="blue" mr={3} onClick={handleSaveCity}>
-                {isEditing ? "Update" : "Add"}
-              </Button>
               <Button variant="ghost" onClick={resetForm}>
                 Cancel
+              </Button>
+              <Button
+                bgGradient={"linear(to-r, #0099FF, #54AB6A)"}
+                _hover={{
+                  bgGradient: "linear(to-r, #0099FF, #54AB6A)",
+                  boxShadow: "lg",
+                }}
+                color="white"
+                ml={3}
+                onClick={handleSaveCity}
+              >
+                {isEditing ? "Save Changes" : "Add"}
               </Button>
             </ModalFooter>
           </ModalContent>

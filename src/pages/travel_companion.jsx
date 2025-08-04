@@ -412,21 +412,28 @@ export default function TravelCompanion() {
         )}
 
         {/* Modal for adding or editing a travel companion */}
-        <Modal isOpen={isOpen} onClose={onClose}>
-          <ModalOverlay />
-          <ModalContent>
-            <ModalHeader>
+        <Modal isOpen={isOpen} onClose={onClose} isCentered>
+          <ModalOverlay zIndex={1000} />
+          <ModalContent maxWidth={"512px"}>
+            <ModalHeader borderBottom={"1px solid #E5E7EB"} p={"20px 34px"}>
               {isEditing ? "Edit Travel Companion" : "Add New Travel Companion"}
             </ModalHeader>
-            <ModalCloseButton />
-            <ModalBody>
+            <ModalCloseButton
+              borderRadius={"full"}
+              bgColor={"#F5F6F7"}
+              _hover={{ bgColor: "#E5E7EB" }}
+              w={"40px"}
+              h={"40px"}
+              m={"8px 24px 0 0"}
+            />
+            <ModalBody p={"20px 34px 100px"} bgColor={"#f5f6f7"}>
               <Input
                 placeholder="Enter Companion Name"
                 value={newCompanion}
                 onChange={(e) => setNewCompanion(e.target.value)}
+                mb={2}
               />
-            </ModalBody>
-            <ModalBody>
+
               <Input
                 placeholder="Enter Companion Icon URL"
                 value={companionUrl}
@@ -435,11 +442,20 @@ export default function TravelCompanion() {
             </ModalBody>
 
             <ModalFooter>
-              <Button colorScheme="blue" mr={3} onClick={handleSubmit}>
-                {isEditing ? "Save Changes" : "Add"}
-              </Button>
               <Button variant="ghost" onClick={onClose}>
                 Cancel
+              </Button>
+              <Button
+                bgGradient={"linear(to-r, #0099FF, #54AB6A)"}
+                _hover={{
+                  bgGradient: "linear(to-r, #0099FF, #54AB6A)",
+                  boxShadow: "lg",
+                }}
+                color="white"
+                ml={3}
+                onClick={handleSubmit}
+              >
+                {isEditing ? "Save Changes" : "Add"}
               </Button>
             </ModalFooter>
           </ModalContent>
