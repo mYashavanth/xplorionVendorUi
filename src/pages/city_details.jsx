@@ -53,7 +53,7 @@ export default function CityList() {
       setLoading(true);
       try {
         const response = await axios.get(
-          `https://xplorionai-bryz7.ondigitalocean.app/app/masters/city/all/${authToken}`
+          `${baseURL}/app/masters/city/all/${authToken}`
         );
 
         // Log raw response (for debugging)
@@ -87,30 +87,32 @@ export default function CityList() {
   }, [authToken]);
 
   // Function to toggle the status
-  const toggleStatus = useCallback(async (rowData) => {
-    const formData = new FormData();
-    formData.append("token", authToken);
-    formData.append("cityId", rowData._id);
-    formData.append("status", rowData.status === 1 ? 0 : 1);
-    try {
-      const response = await axios.post(
-        `${baseURL}/system-users/city/update/status`,
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
-      console.log({ statusData: response.data });
-      setRowData((prevData) =>
-        prevData.map((row) => {
-          if (row._id === rowData._id) {
-            return { ...row, status: rowData.status === 1 ? 0 : 1 };
-          }
-          return row;
-        })
-      );
-    } catch (error) {
-      console.error("Error updating status:", error);
-    }
-  }, []);
+  const toggleStatus = useCallback(
+    async (rowData) => {
+      const formData = new FormData();
+      formData.append("token", authToken);
+      formData.append("cityId", rowData._id);
+      formData.append("status", rowData.status === 1 ? 0 : 1);
+      try {
+        const response = await axios.post(
+          `${baseURL}/system-users/city/update/status`,
+          formData
+        );
+        console.log({ statusData: response.data });
+        setRowData((prevData) =>
+          prevData.map((row) => {
+            if (row._id === rowData._id) {
+              return { ...row, status: rowData.status === 1 ? 0 : 1 };
+            }
+            return row;
+          })
+        );
+      } catch (error) {
+        console.error("Error updating status:", error);
+      }
+    },
+    [authToken]
+  );
 
   // Handle adding or editing a city
   const handleSaveCity = async () => {
@@ -127,11 +129,12 @@ export default function CityList() {
       console.log({ editingRowIndex });
 
       try {
-        await axios.put(
-          `https://xplorionai-bryz7.ondigitalocean.app/app/masters/city/${editingRowIndex}`,
-          formData,
-          { headers: { "Content-Type": "multipart/form-data" } }
+        await axios.post(
+          `${baseURL}/app/masters/city/${editingRowIndex}`,
+          formData
         );
+
+        console.log("url:", `${baseURL}/app/masters/city/${editingRowIndex}`);
 
         setRowData((prevData) =>
           prevData.map((row, index) =>
@@ -144,9 +147,8 @@ export default function CityList() {
     } else {
       try {
         const response = await axios.post(
-          `https://xplorionai-bryz7.ondigitalocean.app/app/masters/city/add`,
-          formData,
-          { headers: { "Content-Type": "multipart/form-data" } }
+          `${baseURL}/app/masters/city/add`,
+          formData
         );
 
         setRowData((prevData) => [
@@ -248,6 +250,7 @@ export default function CityList() {
                   state: params.data.state,
                   country: params.data.country,
                 });
+                console.log(params.data);
                 setEditingRowIndex(params.data._id);
                 setIsEditing(true);
                 onOpen();
