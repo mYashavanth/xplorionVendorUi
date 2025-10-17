@@ -127,19 +127,20 @@ export default function CityList() {
 
     if (isEditing) {
       console.log({ editingRowIndex });
+      formData.append("cityId", editingRowIndex);
 
       try {
-        await axios.post(
-          `${baseURL}/app/masters/city/${editingRowIndex}`,
-          formData
-        );
+        await axios.post(`${baseURL}/app/masters/city/update`, formData);
 
-        console.log("url:", `${baseURL}/app/masters/city/${editingRowIndex}`);
+        console.log("url:", `${baseURL}/app/masters/city/update`);
 
         setRowData((prevData) =>
-          prevData.map((row, index) =>
-            index === editingRowIndex ? { ...row, city, state, country } : row
-          )
+          prevData.map((row) => {
+            if (row._id === editingRowIndex) {
+              return { ...row, city, state, country };
+            }
+            return row;
+          })
         );
       } catch (error) {
         console.error("Error updating city:", error);
