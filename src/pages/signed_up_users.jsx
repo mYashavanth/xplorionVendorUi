@@ -65,6 +65,7 @@ export default function SignedUpUsers() {
     activityRedo: 0,
     dayRedo: 0,
     similerPlaces: 0,
+    googlePlacesSearchNo: 0, // Added new field to state
   });
 
   const handleFetchSubCategories = useCallback(
@@ -121,6 +122,11 @@ export default function SignedUpUsers() {
       formData.append(
         "similerPlaces",
         -Math.abs(itineraryLimits.similerPlaces)
+      );
+      // Append the new field to the form data
+      formData.append(
+        "googlePlacesSearchNo",
+        -Math.abs(itineraryLimits.googlePlacesSearchNo)
       );
       formData.append("token", authToken);
       formData.append("appUserId", currentUserId);
@@ -481,6 +487,24 @@ export default function SignedUpUsers() {
                     value={itineraryLimits.similerPlaces}
                     onChange={(value) =>
                       handleLimitChange("similerPlaces", value)
+                    }
+                  >
+                    <NumberInputField />
+                    <NumberInputStepper>
+                      <NumberIncrementStepper />
+                      <NumberDecrementStepper />
+                    </NumberInputStepper>
+                  </NumberInput>
+                </FormControl>
+
+                {/* Added new FormControl for googlePlacesSearchNo */}
+                <FormControl>
+                  <FormLabel>Google Places Search Limit</FormLabel>
+                  <NumberInput
+                    min={1}
+                    value={itineraryLimits.googlePlacesSearchNo}
+                    onChange={(value) =>
+                      handleLimitChange("googlePlacesSearchNo", value)
                     }
                   >
                     <NumberInputField />

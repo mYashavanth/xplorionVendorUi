@@ -27,6 +27,7 @@ export default function ActivityConfig() {
     similerResturants: "",
     activityRedo: "",
     dayRedo: "",
+    googlePlacesSearchNo: "", // Added new field
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -52,6 +53,7 @@ export default function ActivityConfig() {
         similerResturants: configData.similerPlacesLimitNo || "",
         activityRedo: configData.activityRedoNo || "",
         dayRedo: configData.dayRedoNo || "",
+        googlePlacesSearchNo: configData.googlePlacesSearchNo || "", // Added mapping for new field
       });
     } catch (error) {
       console.error("Error fetching config data:", error);
@@ -111,6 +113,17 @@ export default function ActivityConfig() {
       newErrors.similerResturants = "Must be a non-negative number";
     }
 
+    // Added validation for new field
+    if (!formData.googlePlacesSearchNo) {
+      newErrors.googlePlacesSearchNo =
+        "Number of Google Places searches is required";
+    } else if (
+      isNaN(formData.googlePlacesSearchNo) ||
+      formData.googlePlacesSearchNo < 0
+    ) {
+      newErrors.googlePlacesSearchNo = "Must be a non-negative number";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -127,6 +140,10 @@ export default function ActivityConfig() {
         uploadData.append("similerPlaces", Number(formData.similerResturants));
         uploadData.append("activityRedo", Number(formData.activityRedo));
         uploadData.append("dayRedo", Number(formData.dayRedo));
+        uploadData.append(
+          "googlePlacesSearchNo",
+          Number(formData.googlePlacesSearchNo)
+        ); // Added new field to submission
         uploadData.append("token", authToken);
 
         console.log("Submitting Form Data:", {
@@ -134,6 +151,7 @@ export default function ActivityConfig() {
           similerPlaces: formData.similerResturants,
           activityRedo: formData.activityRedo,
           dayRedo: formData.dayRedo,
+          googlePlacesSearchNo: formData.googlePlacesSearchNo, // Added for logging
           token: authToken,
         });
 
@@ -237,7 +255,7 @@ export default function ActivityConfig() {
               <FormErrorMessage>{errors.activityRedo}</FormErrorMessage>
             </FormControl>
 
-            <FormControl isInvalid={!!errors.similerResturants} mb={8}>
+            <FormControl isInvalid={!!errors.similerResturants} mb={6}>
               <FormLabel>Number of Similar Activities</FormLabel>
               <NumberInput
                 min={0}
@@ -253,6 +271,25 @@ export default function ActivityConfig() {
                 </NumberInputStepper>
               </NumberInput>
               <FormErrorMessage>{errors.similerResturants}</FormErrorMessage>
+            </FormControl>
+
+            {/* Added new form control for googlePlacesSearchNo */}
+            <FormControl isInvalid={!!errors.googlePlacesSearchNo} mb={8}>
+              <FormLabel>Number of Google Places Searches</FormLabel>
+              <NumberInput
+                min={0}
+                value={formData.googlePlacesSearchNo}
+                onChange={(valueString) =>
+                  handleChange("googlePlacesSearchNo", valueString)
+                }
+              >
+                <NumberInputField placeholder="Enter number of Google Places searches" />
+                <NumberInputStepper>
+                  <NumberIncrementStepper />
+                  <NumberDecrementStepper />
+                </NumberInputStepper>
+              </NumberInput>
+              <FormErrorMessage>{errors.googlePlacesSearchNo}</FormErrorMessage>
             </FormControl>
 
             <Button
